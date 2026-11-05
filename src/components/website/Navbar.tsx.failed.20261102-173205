@@ -1,0 +1,446 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+type NavChild = {
+  label: string;
+  href: string;
+};
+
+type NavItem = {
+  label: string;
+  href: string;
+  children?: NavChild[];
+};
+
+const navigation: NavItem[] = [
+  {
+    label: "Home",
+    href: "/",
+  },
+  {
+    label: "Properties",
+    href: "/properties",
+    children: [
+      { label: "All Properties", href: "/properties" },
+      { label: "For Sale", href: "/properties" },
+      { label: "For Rent", href: "/rentals" },
+    ],
+  },
+  {
+    label: "Services",
+    href: "/#services",
+  },
+  {
+    label: "About Us",
+    href: "/about",
+  },
+  {
+    label: "Contact Us",
+    href: "/contact",
+  },
+];
+
+const listingHref = "/contact?subject=list-property";
+
+function ChevronDown() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="transition-transform duration-300
+        motion-reduce:transition-none
+        group-hover:rotate-180
+        group-focus-within:rotate-180"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <span className="relative block h-6 w-6">
+      <span
+        className={`absolute left-1 top-[5px] h-[2px] w-4
+          rounded-full bg-current transition-transform
+          duration-300 ease-in-out
+          motion-reduce:transition-none
+          ${
+            open
+              ? "translate-y-[6px] rotate-45"
+              : ""
+          }`}
+      />
+
+      <span
+        className={`absolute left-1 top-[11px] h-[2px] w-4
+          rounded-full bg-current transition-opacity
+          duration-200 motion-reduce:transition-none
+          ${open ? "opacity-0" : "opacity-100"}`}
+      />
+
+      <span
+        className={`absolute left-1 top-[17px] h-[2px] w-4
+          rounded-full bg-current transition-transform
+          duration-300 ease-in-out
+          motion-reduce:transition-none
+          ${
+            open
+              ? "-translate-y-[6px] -rotate-45"
+              : ""
+          }`}
+      />
+    </span>
+  );
+}
+
+export default function Navbar() {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const isActive = (item: NavItem): boolean => {
+    if (item.href === "/") {
+      return pathname === "/";
+    }
+
+    if (item.label === "Properties") {
+      return (
+        pathname === "/properties" ||
+        pathname.startsWith("/properties/") ||
+        pathname === "/rentals" ||
+        pathname.startsWith("/rentals/")
+      );
+    }
+
+    if (item.href.includes("#")) {
+      return false;
+    }
+
+    return (
+      pathname === item.href ||
+      pathname.startsWith(`${item.href}/`)
+    );
+  };
+
+  return (
+    <header
+      className="fixed inset-x-3 top-3 z-50
+        animate-[gracious-nav-enter_650ms_ease-out_both]
+        sm:inset-x-5 sm:top-4
+        md:inset-x-[5.5%]
+        motion-reduce:animate-none"
+    >
+      <nav
+        aria-label="Main navigation"
+        className="relative rounded-xl border border-white/15
+          bg-[#025a58] px-4 py-3.5 text-white
+          shadow-[0_12px_36px_rgba(0,30,28,0.20)]
+          transition-shadow duration-300
+          hover:shadow-[0_16px_42px_rgba(0,30,28,0.27)]
+          sm:px-6 sm:py-4
+          lg:px-7 xl:px-9
+          motion-reduce:transition-none"
+      >
+        <div className="flex min-h-10 items-center justify-between gap-4">
+
+          {/* Company identity */}
+          <Link
+            href="/"
+            aria-label="Gracious Investment homepage"
+            onClick={() => setMobileOpen(false)}
+            className="group/logo flex min-w-0 shrink-0
+              flex-col rounded-sm leading-tight
+              focus-visible:outline-2
+              focus-visible:outline-offset-4
+              focus-visible:outline-white"
+          >
+            <span
+              className="text-sm font-semibold tracking-wide
+                transition-colors duration-300
+                group-hover/logo:text-teal-100
+                sm:text-base xl:text-lg
+                motion-reduce:transition-none"
+            >
+              GRACIOUS INVESTMENT
+            </span>
+
+            <span className="mt-1 text-[10px] tracking-wide text-teal-100 sm:text-[11px]">
+              Your Property, Our Commitment.
+            </span>
+          </Link>
+
+          {/* Desktop navigation */}
+          <ul className="hidden items-center gap-4 lg:flex xl:gap-7">
+            {navigation.map((item) => {
+              const active = isActive(item);
+
+              return (
+                <li
+                  key={item.label}
+                  className="group relative"
+                >
+                  <Link
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`relative flex items-center gap-1.5
+                      whitespace-nowrap rounded-sm
+                      px-0.5 py-2 text-[13px] font-medium
+                      transition-colors duration-200
+                      focus-visible:outline-2
+                      focus-visible:outline-offset-4
+                      focus-visible:outline-white
+                      xl:text-sm
+                      motion-reduce:transition-none
+                      ${
+                        active
+                          ? "text-white"
+                          : "text-teal-100 hover:text-white"
+                      }`}
+                  >
+                    {item.label}
+
+                    {item.children && <ChevronDown />}
+
+                    {/* Animated active indicator */}
+                    <span
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute
+                        -bottom-0.5 left-0 h-[2px]
+                        rounded-full bg-white
+                        transition-[width] duration-300
+                        ease-out
+                        motion-reduce:transition-none
+                        ${
+                          active
+                            ? "w-full"
+                            : "w-0 group-hover:w-full group-focus-within:w-full"
+                        }`}
+                    />
+                  </Link>
+
+                  {/* Dropdown */}
+                  {item.children && (
+                    <div
+                      className="invisible absolute left-0 top-full
+                        w-52 origin-top
+                        translate-y-2 pt-3 opacity-0
+                        transition-[opacity,transform,visibility]
+                        duration-200 ease-out
+                        group-hover:visible
+                        group-hover:translate-y-0
+                        group-hover:opacity-100
+                        group-focus-within:visible
+                        group-focus-within:translate-y-0
+                        group-focus-within:opacity-100
+                        motion-reduce:transition-none"
+                    >
+                      <ul
+                        className="overflow-hidden rounded-xl
+                          border border-slate-100 bg-white
+                          py-2 text-slate-700
+                          shadow-[0_15px_40px_rgba(0,0,0,0.15)]"
+                      >
+                        {item.children.map((child) => (
+                          <li
+                            key={`${child.label}-${child.href}`}
+                          >
+                            <Link
+                              href={child.href}
+                              className="block px-4 py-3
+                                text-sm transition-[background-color,color,padding]
+                                duration-200
+                                hover:bg-teal-50
+                                hover:pl-5
+                                hover:text-[#025a58]
+                                focus-visible:bg-teal-50
+                                focus-visible:text-[#025a58]
+                                focus-visible:outline-none
+                                motion-reduce:transition-none"
+                            >
+                              {child.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Desktop call to action */}
+          <Link
+            href={listingHref}
+            className="hidden shrink-0 items-center
+              justify-center rounded-lg bg-white
+              px-4 py-2.5 text-[13px]
+              font-semibold text-[#025a58]
+              shadow-sm transition-[background-color,transform,box-shadow]
+              duration-300 ease-out
+              hover:-translate-y-0.5
+              hover:bg-teal-50
+              hover:shadow-lg
+              focus-visible:outline-2
+              focus-visible:outline-offset-3
+              focus-visible:outline-white
+              xl:text-sm
+              lg:inline-flex
+              motion-reduce:transform-none
+              motion-reduce:transition-none"
+          >
+            List Your Property
+          </Link>
+
+          {/* Mobile and tablet toggle */}
+          <button
+            type="button"
+            aria-label={
+              mobileOpen ? "Close navigation menu" : "Open navigation menu"
+            }
+            aria-expanded={mobileOpen}
+            aria-controls="gracious-mobile-menu"
+            onClick={() => setMobileOpen((value) => !value)}
+            className="inline-flex h-10 w-10 shrink-0
+              items-center justify-center
+              rounded-lg border border-white/15
+              text-white transition-colors duration-200
+              hover:bg-white/10
+              focus-visible:outline-2
+              focus-visible:outline-offset-2
+              focus-visible:outline-white
+              lg:hidden
+              motion-reduce:transition-none"
+          >
+            <MenuIcon open={mobileOpen} />
+          </button>
+        </div>
+
+        {/* Animated mobile/tablet panel */}
+        <div
+          id="gracious-mobile-menu"
+          aria-hidden={!mobileOpen}
+          inert={!mobileOpen}
+          className={`grid transition-[grid-template-rows,opacity,visibility]
+            duration-300 ease-in-out lg:hidden
+            motion-reduce:transition-none
+            ${
+              mobileOpen
+                ? "visible grid-rows-[1fr] opacity-100"
+                : "invisible grid-rows-[0fr] opacity-0"
+            }`}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div
+              className="mt-4 max-h-[min(65vh,550px)]
+                overflow-y-auto border-t border-white/20
+                pt-3"
+            >
+              <ul className="space-y-1">
+                {navigation.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      href={item.href}
+                      aria-current={
+                        isActive(item) ? "page" : undefined
+                      }
+                      onClick={() => setMobileOpen(false)}
+                      className={`block rounded-lg
+                        px-3 py-3 text-sm font-medium
+                        transition-[background-color,color,padding]
+                        duration-200
+                        hover:bg-white/10 hover:pl-4
+                        focus-visible:outline-2
+                        focus-visible:outline-white
+                        motion-reduce:transition-none
+                        ${
+                          isActive(item)
+                            ? "bg-white/10 text-white"
+                            : "text-teal-100"
+                        }`}
+                    >
+                      {item.label}
+                    </Link>
+
+                    {item.children && (
+                      <ul className="my-1 ml-4 border-l border-white/20 pl-3">
+                        {item.children.map((child) => (
+                          <li
+                            key={`${child.label}-${child.href}`}
+                          >
+                            <Link
+                              href={child.href}
+                              onClick={() => setMobileOpen(false)}
+                              className="block rounded-lg px-3 py-2.5
+                                text-sm text-teal-100
+                                transition-colors duration-200
+                                hover:bg-white/10 hover:text-white
+                                focus-visible:outline-2
+                                focus-visible:outline-white
+                                motion-reduce:transition-none"
+                            >
+                              {child.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href={listingHref}
+                onClick={() => setMobileOpen(false)}
+                className="mt-4 block rounded-lg bg-white
+                  px-4 py-3 text-center text-sm
+                  font-semibold text-[#025a58]
+                  transition-colors duration-200
+                  hover:bg-teal-50
+                  focus-visible:outline-2
+                  focus-visible:outline-offset-2
+                  focus-visible:outline-white
+                  motion-reduce:transition-none"
+              >
+                List Your Property
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <style jsx>{`
+        @keyframes gracious-nav-enter {
+          from {
+            opacity: 0;
+            transform: translateY(-18px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          header {
+            animation: none;
+          }
+        }
+      `}</style>
+    </header>
+  );
+}

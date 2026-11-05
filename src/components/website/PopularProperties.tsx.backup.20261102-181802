@@ -1,0 +1,29 @@
+import Link from "next/link";
+import PropertyCard from "@/components/website/PropertyCard";
+import { popularProperties } from "@/lib/properties";
+
+export default function PopularProperties() {
+  return (
+    <section className="bg-white py-20 md:py-24">
+      <div className="mx-auto px-6 md:px-[5.5%]">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-4xl font-medium text-[#0b2a5b]">
+            Popular Properties
+          </h2>
+          <Link
+            href="/properties"
+            className="self-start rounded-full bg-[#025a58] px-8 py-5 text-lg font-medium text-white transition-colors hover:bg-[#047370] sm:self-auto"
+          >
+            View all properties
+          </Link>
+        </div>
+
+        <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {popularProperties.map((property) => (
+            <PropertyCard key={property.id} property={property} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -1,0 +1,310 @@
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getAuthToken,
+  laravelRequest,
+  SESSION_COOKIE,
+} from "@/lib/auth/server";
+
+type Context = {
+  params: Promise<{ parts: string[] }>;
+};
+
+type Method = "GET" | "POST" | "PUT" | "PATCH";
+
+function resolveEndpoint(
+  method: Method,
+  parts: string[],
+): string | null {
+  if (
+    method === "POST" &&
+    parts.length === 1 &&
+    parts[0] === "invitations"
+  ) {
+    return "/staff/invitations";
+  }
+
+  if (
+    method === "POST" &&
+    parts.length === 4 &&
+    parts[0] === "users" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "invitation" &&
+    parts[3] === "resend"
+  ) {
+    return `/staff/${parts[1]}/invitation/resend`;
+  }
+
+  // CRM: Archive and Restore
+  if (
+    method === "GET" &&
+    parts.length === 2 &&
+    ["customers", "leads"].includes(parts[0]) &&
+    parts[1] === "archived"
+  ) {
+    return `/${parts[0]}/archived`;
+  }
+
+  if (
+    method === "PATCH" &&
+    parts.length === 3 &&
+    ["customers", "leads"].includes(parts[0]) &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    ["archive", "restore"].includes(parts[2])
+  ) {
+    return `/${parts[0]}/${parts[1]}/${parts[2]}`;
+  }
+
+  // CRM: Lead Management
+  if (
+    parts.length === 1 &&
+    parts[0] === "leads" &&
+    ["GET", "POST"].includes(method)
+  ) {
+    return "/leads";
+  }
+
+  if (
+    parts.length === 2 &&
+    parts[0] === "leads" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    method === "GET"
+  ) {
+    return `/leads/${parts[1]}`;
+  }
+
+  if (
+    parts.length === 3 &&
+    parts[0] === "leads" &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    const id = parts[1];
+
+    if (parts[2] === "activities" &&
+        ["GET", "POST"].includes(method)) {
+      return `/leads/${id}/activities`;
+    }
+
+    if (parts[2] === "status" && method === "PATCH") {
+      return `/leads/${id}/status`;
+    }
+
+    if (parts[2] === "assign" && method === "PATCH") {
+      return `/leads/${id}/assign`;
+    }
+  }
+
+  if (
+    parts.length === 5 &&
+    parts[0] === "leads" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "activities" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    parts[4] === "complete" &&
+    method === "PATCH"
+  ) {
+    return `/leads/${parts[1]}/activities/${parts[3]}/complete`;
+  }
+
+  if (
+    parts.length === 2 &&
+    parts[0] === "crm" &&
+    parts[1] === "follow-ups" &&
+    method === "GET"
+  ) {
+    return "/crm/follow-ups";
+  }
+
+  // CRM: Customer Management
+  if (
+    parts.length === 1 &&
+    parts[0] === "customers" &&
+    (method === "GET" || method === "POST")
+  ) {
+    return "/customers";
+  }
+
+  if (
+    parts.length === 2 &&
+    parts[0] === "customers" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    (method === "GET" || method === "PUT")
+  ) {
+    return `/customers/${parts[1]}`;
+  }
+
+  if (parts.length === 1) {
+    if (parts[0] === "users" && ["GET", "POST"].includes(method)) {
+      return "/users";
+    }
+
+    if (parts[0] === "roles" && method === "GET") {
+      return "/roles";
+    }
+
+    if (parts[0] === "password" && method === "PUT") {
+      return "/change-password";
+    }
+  }
+
+  if (
+    parts[0] === "users" &&
+    parts.length >= 2 &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    const id = parts[1];
+
+    if (parts.length === 2 && ["GET", "PUT"].includes(method)) {
+      return `/users/${id}`;
+    }
+
+    if (
+      parts.length === 3 &&
+      parts[2] === "status" &&
+      method === "PATCH"
+    ) {
+      return `/users/${id}/status`;
+    }
+  }
+
+  return null;
+}
+
+async function handle(
+  request: NextRequest,
+  context: Context,
+  method: Method,
+) {
+  const { parts } = await context.params;
+  const endpoint = resolveEndpoint(method, parts);
+
+  if (!endpoint) {
+    return NextResponse.json(
+      { message: "Unsupported operation." },
+      { status: 404 },
+    );
+  }
+
+  if (method !== "GET") {
+    const origin = request.headers.get("origin");
+    const site = request.headers.get("sec-fetch-site");
+
+    if (
+      (origin && origin !== request.nextUrl.origin) ||
+      (site && !["same-origin", "none"].includes(site))
+    ) {
+      return NextResponse.json(
+        { message: "Request origin rejected." },
+        { status: 403 },
+      );
+    }
+  }
+
+  const token = await getAuthToken();
+
+  if (!token) {
+    return NextResponse.json(
+      { message: "Please sign in again." },
+      { status: 401 },
+    );
+  }
+
+  try {
+    const query =
+      method === "GET" &&
+      (
+        ["/users", "/customers", "/leads", "/crm/follow-ups"].includes(endpoint) ||
+        endpoint === "/customers/archived" ||
+        endpoint === "/leads/archived"
+      )
+        ? request.nextUrl.search
+        : "";
+
+    let body: string | undefined;
+
+    if (method !== "GET") {
+      const contentType = request.headers.get("content-type") || "";
+
+      if (!contentType.includes("application/json")) {
+        return NextResponse.json(
+          { message: "JSON request required." },
+          { status: 415 },
+        );
+      }
+
+      body = await request.text();
+
+      if (body.length > 20000) {
+        return NextResponse.json(
+          { message: "Request is too large." },
+          { status: 413 },
+        );
+      }
+
+      try {
+        JSON.parse(body);
+      } catch {
+        return NextResponse.json(
+          { message: "Invalid JSON request." },
+          { status: 400 },
+        );
+      }
+    }
+
+    const upstream = await laravelRequest(
+      `${endpoint}${query}`,
+      token,
+      {
+        method,
+        ...(body !== undefined
+          ? {
+              body,
+              headers: { "Content-Type": "application/json" },
+            }
+          : {}),
+      },
+    );
+
+    const contentType = upstream.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+      return NextResponse.json(
+        { message: "Unexpected response from the backend." },
+        { status: 502 },
+      );
+    }
+
+    const result: unknown = await upstream.json();
+
+    const response = NextResponse.json(result, {
+      status: upstream.status,
+      headers: { "Cache-Control": "no-store" },
+    });
+
+    if (endpoint === "/change-password" && upstream.ok) {
+      response.cookies.delete(SESSION_COOKIE);
+    }
+
+    return response;
+  } catch {
+    return NextResponse.json(
+      { message: "Cannot connect to the Laravel server." },
+      { status: 503 },
+    );
+  }
+}
+
+export async function GET(request: NextRequest, context: Context) {
+  return handle(request, context, "GET");
+}
+
+export async function POST(request: NextRequest, context: Context) {
+  return handle(request, context, "POST");
+}
+
+export async function PUT(request: NextRequest, context: Context) {
+  return handle(request, context, "PUT");
+}
+
+export async function PATCH(request: NextRequest, context: Context) {
+  return handle(request, context, "PATCH");
+}

@@ -1,0 +1,188 @@
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getAuthToken,
+  laravelRequest,
+  SESSION_COOKIE,
+} from "@/lib/auth/server";
+
+type Context = {
+  params: Promise<{ parts: string[] }>;
+};
+
+type Method = "GET" | "POST" | "PUT" | "PATCH";
+
+function resolveEndpoint(
+  method: Method,
+  parts: string[],
+): string | null {
+  if (parts.length === 1) {
+    if (parts[0] === "users" && ["GET", "POST"].includes(method)) {
+      return "/users";
+    }
+
+    if (parts[0] === "roles" && method === "GET") {
+      return "/roles";
+    }
+
+    if (parts[0] === "password" && method === "PUT") {
+      return "/change-password";
+    }
+  }
+
+  if (
+    parts[0] === "users" &&
+    parts.length >= 2 &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    const id = parts[1];
+
+    if (parts.length === 2 && ["GET", "PUT"].includes(method)) {
+      return `/users/${id}`;
+    }
+
+    if (
+      parts.length === 3 &&
+      parts[2] === "status" &&
+      method === "PATCH"
+    ) {
+      return `/users/${id}/status`;
+    }
+  }
+
+  return null;
+}
+
+async function handle(
+  request: NextRequest,
+  context: Context,
+  method: Method,
+) {
+  const { parts } = await context.params;
+  const endpoint = resolveEndpoint(method, parts);
+
+  if (!endpoint) {
+    return NextResponse.json(
+      { message: "Unsupported operation." },
+      { status: 404 },
+    );
+  }
+
+  if (method !== "GET") {
+    const origin = request.headers.get("origin");
+    const site = request.headers.get("sec-fetch-site");
+
+    if (
+      (origin && origin !== request.nextUrl.origin) ||
+      (site && !["same-origin", "none"].includes(site))
+    ) {
+      return NextResponse.json(
+        { message: "Request origin rejected." },
+        { status: 403 },
+      );
+    }
+  }
+
+  const token = await getAuthToken();
+
+  if (!token) {
+    return NextResponse.json(
+      { message: "Please sign in again." },
+      { status: 401 },
+    );
+  }
+
+  try {
+    const query =
+      method === "GET" && endpoint === "/users"
+        ? request.nextUrl.search
+        : "";
+
+    let body: string | undefined;
+
+    if (method !== "GET") {
+      const contentType = request.headers.get("content-type") || "";
+
+      if (!contentType.includes("application/json")) {
+        return NextResponse.json(
+          { message: "JSON request required." },
+          { status: 415 },
+        );
+      }
+
+      body = await request.text();
+
+      if (body.length > 20000) {
+        return NextResponse.json(
+          { message: "Request is too large." },
+          { status: 413 },
+        );
+      }
+
+      try {
+        JSON.parse(body);
+      } catch {
+        return NextResponse.json(
+          { message: "Invalid JSON request." },
+          { status: 400 },
+        );
+      }
+    }
+
+    const upstream = await laravelRequest(
+      `${endpoint}${query}`,
+      token,
+      {
+        method,
+        ...(body !== undefined
+          ? {
+              body,
+              headers: { "Content-Type": "application/json" },
+            }
+          : {}),
+      },
+    );
+
+    const contentType = upstream.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+      return NextResponse.json(
+        { message: "Unexpected response from the backend." },
+        { status: 502 },
+      );
+    }
+
+    const result: unknown = await upstream.json();
+
+    const response = NextResponse.json(result, {
+      status: upstream.status,
+      headers: { "Cache-Control": "no-store" },
+    });
+
+    if (endpoint === "/change-password" && upstream.ok) {
+      response.cookies.delete(SESSION_COOKIE);
+    }
+
+    return response;
+  } catch {
+    return NextResponse.json(
+      { message: "Cannot connect to the Laravel server." },
+      { status: 503 },
+    );
+  }
+}
+
+export async function GET(request: NextRequest, context: Context) {
+  return handle(request, context, "GET");
+}
+
+export async function POST(request: NextRequest, context: Context) {
+  return handle(request, context, "POST");
+}
+
+export async function PUT(request: NextRequest, context: Context) {
+  return handle(request, context, "PUT");
+}
+
+export async function PATCH(request: NextRequest, context: Context) {
+  return handle(request, context, "PATCH");
+}

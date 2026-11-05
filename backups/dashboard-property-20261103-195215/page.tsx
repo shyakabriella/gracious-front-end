@@ -1,0 +1,255 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import Link from "next/link";
+import {
+  getDashboardSummary,
+} from "@/lib/dashboard/summary";
+import MetricBars from "@/components/dashboard/charts/MetricBars";
+import StatusDonut from "@/components/dashboard/charts/StatusDonut";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+function Panel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={`min-w-0 rounded-xl border border-[#e1e6f0] bg-white p-5 shadow-[0_2px_8px_rgba(25,40,75,0.02)] sm:p-7 ${className}`}
+    >
+      {children}
+    </section>
+  );
+}
+
+function PanelHeading({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div>
+      <h2 className="text-[13px] font-bold text-[#263956]">
+        {title}
+      </h2>
+
+      {description && (
+        <p className="mt-1.5 text-[11px] leading-5 text-[#91a0b9]">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+async function DashboardContent() {
+  const summary = await getDashboardSummary();
+
+  if (summary.error) {
+    return (
+      <div
+        role="status"
+        className="rounded-xl border border-amber-200 bg-white p-6 text-sm text-amber-800"
+      >
+        {summary.error}
+      </div>
+    );
+  }
+
+  const metrics = summary.metrics;
+  const leadingMetric = metrics[0];
+  const statusTotal = summary.statuses.reduce(
+    (sum, item) => sum + item.value,
+    0
+  );
+
+  return (
+    <div className="space-y-0">
+      {/* Top row: 2/3 activity and 1/3 status */}
+      <div className="grid gap-0 lg:grid-cols-[2fr_1fr]">
+        <Panel className="min-h-[480px] lg:rounded-r-none">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <PanelHeading title="Property & Business Activity" />
+
+              <p className="mt-3 text-[25px] font-bold text-[#263956]">
+                {leadingMetric
+                  ? leadingMetric.value.toLocaleString("en-RW")
+                  : "—"}
+              </p>
+
+              <p className="mt-1 text-[12px] font-medium text-[#08a579]">
+                {leadingMetric
+                  ? leadingMetric.label
+                  : "No available count"}
+              </p>
+            </div>
+
+            <Link
+              href="/dashboard/properties"
+              className="rounded-lg border border-[#e0e4fb] px-4 py-2.5 text-xs font-semibold text-[#626df1] hover:bg-[#f6f7ff]"
+            >
+              View Properties
+            </Link>
+          </div>
+
+          <p className="mt-6 text-[11px] text-[#91a0b9]">
+            Comparison of available business counts
+          </p>
+
+          <div className="mt-6">
+            <MetricBars metrics={metrics.slice(0, 7)} />
+          </div>
+
+          <p className="mt-5 text-[11px] text-[#91a0b9]">
+            Figures represent current records, not a daily activity history.
+          </p>
+        </Panel>
+
+        <Panel className="min-h-[480px] lg:rounded-l-none lg:border-l-0">
+          <PanelHeading
+            title="Status Distribution"
+            description="Breakdown provided by the Laravel API"
+          />
+
+          <StatusDonut items={summary.statuses} />
+
+          {statusTotal > 0 && (
+            <p className="mt-5 text-center text-[11px] text-[#91a0b9]">
+              {statusTotal.toLocaleString("en-RW")} records in this breakdown
+            </p>
+          )}
+        </Panel>
+      </div>
+
+      {/* Bottom row: three connected panels */}
+      <div className="grid gap-0 lg:grid-cols-3">
+        <Panel className="min-h-[310px] lg:rounded-tr-none">
+          <PanelHeading
+            title="Business Indicators"
+            description="Current record counts"
+          />
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {metrics.slice(0, 3).map((metric, index) => {
+              const colors = [
+                "#7474ed",
+                "#f6a63f",
+                "#36b9d0",
+              ];
+
+              return (
+                <div
+                  key={metric.label}
+                  className="flex h-[116px] w-[116px] flex-col items-center justify-center rounded-full border-[7px] border-white text-center shadow-[0_0_0_3px_#eef0f7]"
+                  style={{
+                    backgroundColor: colors[index],
+                  }}
+                  title={metric.label}
+                >
+                  <strong className="text-[24px] font-semibold text-white tabular-nums">
+                    {metric.value.toLocaleString("en-RW")}
+                  </strong>
+                  <span className="mt-1 max-w-[90px] truncate text-[10px] text-white">
+                    {metric.label}
+                  </span>
+                </div>
+              );
+            })}
+
+            {metrics.length === 0 && (
+              <p className="text-sm text-[#91a0b9]">
+                No indicators available.
+              </p>
+            )}
+          </div>
+        </Panel>
+
+        <Panel className="min-h-[310px] lg:rounded-none lg:border-l-0">
+          <div className="flex items-start justify-between gap-3">
+            <PanelHeading
+              title="Recent Activity"
+              description="Latest business operations"
+            />
+          </div>
+
+          <div className="mt-8 rounded-lg border border-dashed border-[#e4e8f3] px-5 py-10 text-center">
+            <p className="text-sm font-semibold text-[#526784]">
+              Activity history is not connected yet
+            </p>
+
+            <p className="mt-2 text-xs leading-6 text-[#91a0b9]">
+              Recent activities will appear when a suitable
+              Laravel endpoint is available.
+            </p>
+          </div>
+        </Panel>
+
+        <Panel className="min-h-[310px] lg:rounded-tl-none lg:border-l-0">
+          <div className="flex items-start justify-between gap-3">
+            <PanelHeading
+              title="Business Summary"
+              description="Overview of available statistics"
+            />
+
+            <Link
+              href="/dashboard"
+              className="text-xs font-semibold text-[#626df1] hover:underline"
+            >
+              Overview
+            </Link>
+          </div>
+
+          <div className="mt-7 space-y-5">
+            {metrics.slice(0, 4).map((metric) => (
+              <div
+                key={metric.label}
+                className="flex items-center justify-between gap-4 border-b border-[#eef0f6] pb-4 last:border-b-0"
+              >
+                <p className="text-xs text-[#7284a2]">
+                  {metric.label}
+                </p>
+
+                <span className="text-sm font-bold text-[#263956] tabular-nums">
+                  {metric.value.toLocaleString("en-RW")}
+                </span>
+              </div>
+            ))}
+
+            {metrics.length === 0 && (
+              <p className="text-sm text-[#91a0b9]">
+                No business summary available.
+              </p>
+            )}
+          </div>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="h-[480px] animate-pulse rounded-xl bg-[#edf0f7] lg:col-span-2" />
+          <div className="h-[480px] animate-pulse rounded-xl bg-[#edf0f7]" />
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
+  );
+}
