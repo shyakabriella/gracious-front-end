@@ -93,6 +93,38 @@ function resolveEndpoint(
     return `/properties/${parts[1]}/owners/${parts[3]}`;
   }
 
+  // Rental Management: list rental agreements.
+  // Laravel enforces rentals.view and role-based access.
+  if (
+    method === "GET" &&
+    parts.length === 1 &&
+    parts[0] === "rentals"
+  ) {
+    return "/rentals";
+  }
+
+  // Rental Management: view one rental agreement.
+  if (
+    method === "GET" &&
+    parts.length === 2 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    return `/rentals/${parts[1]}`;
+  }
+
+  // Rent Statements: adjusted balances and schedule periods.
+  // The Laravel statement service owns all financial calculations.
+  if (
+    method === "GET" &&
+    parts.length === 3 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "statement"
+  ) {
+    return `/rentals/${parts[1]}/statement`;
+  }
+
   // Property Management: list properties.
   if (
     method === "GET" &&
@@ -341,7 +373,7 @@ async function handle(
     const query =
       method === "GET" &&
       (
-        ["/users", "/customers", "/leads", "/properties", "/crm/follow-ups", "/crm/unassigned-leads", "/owners"].includes(endpoint) ||
+        ["/users", "/customers", "/leads", "/properties", "/crm/follow-ups", "/crm/unassigned-leads", "/owners", "/rentals"].includes(endpoint) ||
         endpoint === "/customers/archived" ||
         endpoint === "/leads/archived"
       )
