@@ -9,7 +9,7 @@ type Context = {
   params: Promise<{ parts: string[] }>;
 };
 
-type Method = "GET" | "POST" | "PUT" | "PATCH";
+type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 function resolveEndpoint(
   method: Method,
@@ -41,6 +41,34 @@ function resolveEndpoint(
     parts[0] === "properties"
   ) {
     return "/properties";
+  }
+
+  // Property Management: retrieve active categories.
+  if (
+    method === "GET" &&
+    parts.length === 1 &&
+    parts[0] === "property-categories"
+  ) {
+    return "/property-categories";
+  }
+
+  // Property Management: register property.
+  if (
+    method === "POST" &&
+    parts.length === 1 &&
+    parts[0] === "properties"
+  ) {
+    return "/properties";
+  }
+
+  // Property Management: details, editing and archiving.
+  if (
+    parts.length === 2 &&
+    parts[0] === "properties" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    ["GET", "PUT", "DELETE"].includes(method)
+  ) {
+    return `/properties/${parts[1]}`;
   }
 
   // Featured Properties: dedicated administrator-controlled endpoint.
@@ -263,7 +291,7 @@ async function handle(
 
     let body: string | undefined;
 
-    if (method !== "GET") {
+    if (method !== "GET" && method !== "DELETE") {
       const contentType = request.headers.get("content-type") || "";
 
       if (!contentType.includes("application/json")) {
@@ -349,4 +377,8 @@ export async function PUT(request: NextRequest, context: Context) {
 
 export async function PATCH(request: NextRequest, context: Context) {
   return handle(request, context, "PATCH");
+}
+
+export async function DELETE(request: NextRequest, context: Context) {
+  return handle(request, context, "DELETE");
 }

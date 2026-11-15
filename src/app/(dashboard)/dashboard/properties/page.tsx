@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { apiError, readJson } from "@/lib/crm/customers";
+import PropertyRegistrationForm from "@/components/properties/PropertyRegistrationForm";
+import PropertyDetailsModal from "@/components/properties/PropertyDetailsModal";
+import PropertyEditModal from "@/components/properties/PropertyEditModal";
 
 type Property = {
   id: number;
@@ -14,6 +17,7 @@ type Property = {
   availability_status: string;
   is_published: boolean;
   is_featured: boolean;
+  created_by?: number;
   category?: { name: string } | null;
   agent?: { name: string } | null;
 };
@@ -26,6 +30,7 @@ type PropertyPage = {
 };
 
 type Account = {
+  id: number;
   roles: string[];
   permissions: string[];
 };
@@ -52,6 +57,8 @@ export default function Page() {
   const [page, setPage] = useState(1);
   const [reload, setReload] = useState(0);
   const [records, setRecords] = useState<PropertyPage | null>(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
+  const [editingPropertyId, setEditingPropertyId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -91,6 +98,12 @@ export default function Page() {
   }, []);
 
   const canView = account?.permissions?.includes("properties.view") ?? false;
+  const canUpdate = account?.permissions?.includes("properties.update") ?? false;
+  const canDelete = account?.permissions?.includes("properties.delete") ?? false;
+  const manager = account?.roles?.some((role) =>
+    role === "admin" || role === "super_admin"
+  ) ?? false;
+  const canCreate = account?.permissions?.includes("properties.create") ?? false;
   const canFeature = Boolean(
     account?.roles?.some((role) =>
       role === "super_admin" || role === "admin"
@@ -158,6 +171,65 @@ export default function Page() {
     setPage(1);
     setAppliedSearch(search.trim());
     setReload((value) => value + 1);
+  }
+
+  async function archiveProperty(property: Property) {
+    const allowed =
+      canDelete &&
+      (
+        manager ||
+        (
+          account?.id !== undefined &&
+          property.created_by === account.id
+        )
+      );
+
+    if (!allowed || busyId !== null) return;
+
+    const confirmed = window.confirm(
+      `Archive "${property.title}" (${property.reference})?\n\n` +
+      "This will remove the property from active records and " +
+      "unpublish it. The database record will not be " +
+      "permanently deleted."
+    );
+
+    if (!confirmed) return;
+
+    setBusyId(property.id);
+    setError("");
+    setFeedback("");
+
+    try {
+      const response = await fetch(
+        `${base}/properties/${property.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const result = await readJson(response);
+
+      if (!response.ok) {
+        throw new Error(
+          apiError(result, "Unable to archive property.")
+        );
+      }
+
+      setFeedback(
+        `"${property.title}" was archived successfully.`
+      );
+
+      setPage(1);
+      setReload((value) => value + 1);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Unable to archive property."
+      );
+    } finally {
+      setBusyId(null);
+    }
   }
 
   const updateFeatured = useCallback(async (
@@ -242,6 +314,36 @@ export default function Page() {
           Manage the featured visibility of verified and published properties.
         </p>
       </header>
+
+      {canCreate && (
+        <div className="flex flex-wrap items-center gap-4">
+          <PropertyRegistrationForm
+            onCreated={() => {
+              setPage(1);
+              setReload((value) => value + 1);
+            }}
+          />
+        </div>
+      )}
+
+      {selectedPropertyId !== null && (
+        <PropertyDetailsModal
+          propertyId={selectedPropertyId}
+          onClose={() => setSelectedPropertyId(null)}
+        />
+      )}
+
+      {editingPropertyId !== null && (
+        <PropertyEditModal
+          propertyId={editingPropertyId}
+          onClose={() => setEditingPropertyId(null)}
+          onSaved={() => {
+            setEditingPropertyId(null);
+            setReload((value) => value + 1);
+            setFeedback("Property updated successfully. Check its verification status.");
+          }}
+        />
+      )}
 
       {feedback && (
         <p role="status" className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800">
@@ -337,7 +439,48 @@ export default function Page() {
                     {property.is_featured ? "Featured" : "Not featured"}
                   </td>
                   <td className="p-4">
-                    {canFeature ? (
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPropertyId(property.id)}
+                        className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-[#263956]"
+                      >
+                        View Details
+                      </button>
+                      {canUpdate && (
+                        manager || (
+                          account?.id !== undefined &&
+                          property.created_by === account.id
+                        )
+                      ) && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingPropertyId(property.id)}
+                          className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-[#263956]"
+                        >
+                          Edit
+                        </button>
+                      )}
+                      {canDelete &&
+                        (
+                          manager ||
+                          (
+                            account?.id !== undefined &&
+                            property.created_by === account.id
+                          )
+                        ) && (
+                          <button
+                            type="button"
+                            disabled={busyId !== null}
+                            onClick={() => void archiveProperty(property)}
+                            className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-700 disabled:opacity-40"
+                          >
+                            {busyId === property.id
+                              ? "Processing..."
+                              : "Archive"}
+                          </button>
+                        )}
+                      {canFeature ? (
                       <button
                         type="button"
                         disabled={
@@ -363,6 +506,7 @@ export default function Page() {
                         View only
                       </span>
                     )}
+                    </div>
                   </td>
                 </tr>
               ))}
