@@ -45,6 +45,12 @@ const sections: {
         permission: "properties.view",
       },
       {
+        label: "Property Owners",
+        href: "/dashboard/owners",
+        icon: "users",
+        permission: "owners.view",
+      },
+      {
         label: "Customers",
         href: "/dashboard/customers",
         icon: "users",

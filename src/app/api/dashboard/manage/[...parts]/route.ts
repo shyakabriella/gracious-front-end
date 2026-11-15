@@ -34,6 +34,39 @@ function resolveEndpoint(
     return `/staff/${parts[1]}/invitation/resend`;
   }
 
+  // Property Owners: listing and registration.
+  // Laravel enforces owners.view and owners.create.
+  if (
+    parts.length === 1 &&
+    parts[0] === "owners" &&
+    (method === "GET" || method === "POST")
+  ) {
+    return "/owners";
+  }
+
+  // Property Owners: details, editing and archiving.
+  // Laravel enforces owner permissions and creator isolation.
+  if (
+    parts.length === 2 &&
+    parts[0] === "owners" &&
+    /^[1-9]\\d*$/.test(parts[1]) &&
+    ["GET", "PUT", "DELETE"].includes(method)
+  ) {
+    return `/owners/${parts[1]}`;
+  }
+
+  // Property Owners: linked property records.
+  // Laravel also requires properties.view.
+  if (
+    parts.length === 3 &&
+    parts[0] === "owners" &&
+    /^[1-9]\\d*$/.test(parts[1]) &&
+    parts[2] === "properties" &&
+    method === "GET"
+  ) {
+    return `/owners/${parts[1]}/properties`;
+  }
+
   // Property Management: list properties.
   if (
     method === "GET" &&
@@ -282,7 +315,7 @@ async function handle(
     const query =
       method === "GET" &&
       (
-        ["/users", "/customers", "/leads", "/properties", "/crm/follow-ups", "/crm/unassigned-leads"].includes(endpoint) ||
+        ["/users", "/customers", "/leads", "/properties", "/crm/follow-ups", "/crm/unassigned-leads", "/owners"].includes(endpoint) ||
         endpoint === "/customers/archived" ||
         endpoint === "/leads/archived"
       )
