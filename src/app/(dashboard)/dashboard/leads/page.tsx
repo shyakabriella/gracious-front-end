@@ -92,6 +92,7 @@ async function requestApi(
 
 export default function LeadsPage() {
   const [permissions, setPermissions] = useState<string[] | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
   const [leads, setLeads] = useState<PageResult<Lead> | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -125,7 +126,9 @@ export default function LeadsPage() {
   const canView = permissions?.includes("leads.view") ?? false;
   const canCreate = permissions?.includes("leads.create") ?? false;
   const canUpdate = permissions?.includes("leads.update") ?? false;
-  const canAssign = permissions?.includes("leads.assign") ?? false;
+  const canAssign =
+    (roles.includes("super_admin") || roles.includes("admin")) &&
+    (permissions?.includes("leads.assign") ?? false);
 
   useEffect(() => {
     let active = true;
@@ -137,7 +140,10 @@ export default function LeadsPage() {
         });
 
         const data = await readJson(response) as {
-          user?: { permissions?: string[] };
+          user?: {
+            permissions?: string[];
+            roles?: string[];
+          };
         };
 
         if (active) {
@@ -146,9 +152,18 @@ export default function LeadsPage() {
               ? data.user.permissions
               : [],
           );
+
+          setRoles(
+            response.ok && Array.isArray(data.user?.roles)
+              ? data.user.roles
+              : [],
+          );
         }
       } catch {
-        if (active) setPermissions([]);
+        if (active) {
+          setPermissions([]);
+          setRoles([]);
+        }
       }
     }
 
@@ -335,7 +350,7 @@ export default function LeadsPage() {
 
     await runAction(async () => {
       await requestApi(`leads/${selected.id}/status`, "PATCH", { status });
-      setSelected({ ...selected, status });
+      await refreshSelectedLead(selected.id);
       setReload((n) => n + 1);
       await loadActivities(selected);
       setNotice("Lead status updated.");
@@ -350,10 +365,7 @@ export default function LeadsPage() {
         assigned_agent_id: value ? Number(value) : null,
       });
 
-      setSelected({
-        ...selected,
-        assigned_agent_id: value ? Number(value) : null,
-      });
+      await refreshSelectedLead(selected.id);
 
       setReload((n) => n + 1);
       await loadActivities(selected);
