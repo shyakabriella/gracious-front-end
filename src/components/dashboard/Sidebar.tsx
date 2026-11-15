@@ -155,9 +155,8 @@ export default function Sidebar({ user, onNavigate }: Props) {
         className="min-h-0 flex-1 overflow-y-auto px-4 py-6"
       >
         {sections.map((section) => {
-          const customerOnly =
-            user.roles.includes("customer") &&
-            !permissions.has("dashboard.view");
+          // Customer accounts must not display staff navigation.
+          const customerOnly = user.roles.includes("customer");
 
           const items = section.items.filter((item) =>
             customerOnly

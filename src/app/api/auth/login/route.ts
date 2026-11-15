@@ -65,7 +65,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // This dashboard is for internal staff, not public customers.
+    // Allow active staff and customers to authenticate.
+    // Laravel remains responsible for endpoint authorization.
     const staffRoles = [
       "super_admin",
       "admin",
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
       user.status === "active" &&
       (
         user.roles.some((role) => staffRoles.includes(role)) ||
+        user.roles.includes("customer") ||
         user.permissions.includes("users.view") ||
         user.permissions.includes("properties.view")
       );
