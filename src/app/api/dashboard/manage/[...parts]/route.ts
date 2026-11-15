@@ -125,6 +125,62 @@ function resolveEndpoint(
     return `/rentals/${parts[1]}/statement`;
   }
 
+  // Rental payments: list and record payments.
+  // Recording creates pending payments only.
+  // Laravel enforces rental-level permissions and adjusted balances.
+  if (
+    parts.length === 3 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "payments" &&
+    (method === "GET" || method === "POST")
+  ) {
+    return `/rentals/${parts[1]}/payments`;
+  }
+
+  // Rental payment evidence: metadata only.
+  // Actual receipt uploads/downloads use a separate secure proxy.
+  if (
+    method === "GET" &&
+    parts.length === 5 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "payments" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    parts[4] === "evidences"
+  ) {
+    return `/rentals/${parts[1]}/payments/${parts[3]}/evidences`;
+  }
+
+  // Rental payment history: read-only audit records.
+  if (
+    method === "GET" &&
+    parts.length === 5 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "payments" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    parts[4] === "history"
+  ) {
+    return `/rentals/${parts[1]}/payments/${parts[3]}/history`;
+  }
+
+  // Rental payment approval and rejection.
+  // Laravel limits these actions to admins and super admins
+  // with rentals.update. Evidence and balance rules remain
+  // enforced in Laravel.
+  if (
+    method === "PATCH" &&
+    parts.length === 5 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "payments" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    ["verify", "reject"].includes(parts[4])
+  ) {
+    return `/rentals/${parts[1]}/payments/${parts[3]}/${parts[4]}`;
+  }
+
   // Property Management: list properties.
   if (
     method === "GET" &&

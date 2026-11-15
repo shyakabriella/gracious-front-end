@@ -1,5 +1,7 @@
 "use client";
 
+import RentalPaymentsModal from "@/components/rentals/RentalPaymentsModal";
+
 import { useEffect, useState } from "react";
 import { apiError, readJson } from "@/lib/crm/customers";
 
@@ -130,6 +132,13 @@ export default function Page() {
   const [error, setError] = useState("");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const [paymentRental, setPaymentRental] = useState<{
+    id: number;
+    reference: string;
+    status: string;
+    currency: string;
+  } | null>(null);
   const [selected, setSelected] = useState<Rental | null>(null);
   const [statement, setStatement] = useState<Statement | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -473,13 +482,30 @@ export default function Page() {
                       </span>
                     </td>
                     <td className="p-3">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedId(rental.id)}
-                        className={buttonClass}
-                      >
-                        View Statement
-                      </button>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedId(rental.id)}
+                          className={buttonClass}
+                        >
+                          View Statement
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPaymentRental({
+                              id: rental.id,
+                              reference: rental.reference,
+                              status: rental.status,
+                              currency: rental.currency,
+                            })
+                          }
+                          className={buttonClass}
+                        >
+                          Manage Payments
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -703,6 +729,19 @@ export default function Page() {
             </div>
           </div>
         </div>
+      )}
+
+      {paymentRental && account && (
+        <RentalPaymentsModal
+          key={paymentRental.id}
+          rentalId={paymentRental.id}
+          rentalReference={paymentRental.reference}
+          rentalStatus={paymentRental.status}
+          currency={paymentRental.currency}
+          account={account}
+          onClose={() => setPaymentRental(null)}
+          onChanged={() => setReload((value) => value + 1)}
+        />
       )}
     </main>
   );
