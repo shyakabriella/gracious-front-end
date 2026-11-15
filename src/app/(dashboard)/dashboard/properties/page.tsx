@@ -6,6 +6,7 @@ import PropertyRegistrationForm from "@/components/properties/PropertyRegistrati
 import PropertyDetailsModal from "@/components/properties/PropertyDetailsModal";
 import PropertyEditModal from "@/components/properties/PropertyEditModal";
 import PropertyDocumentsModal from "@/components/properties/PropertyDocumentsModal";
+import PropertyImagesModal from "@/components/properties/PropertyImagesModal";
 
 type Property = {
   id: number;
@@ -61,6 +62,7 @@ export default function Page() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
   const [editingPropertyId, setEditingPropertyId] = useState<number | null>(null);
   const [documentsProperty, setDocumentsProperty] = useState<Property | null>(null);
+  const [imagesProperty, setImagesProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -335,6 +337,28 @@ export default function Page() {
         />
       )}
 
+      {imagesProperty !== null && (
+        <PropertyImagesModal
+          propertyId={imagesProperty.id}
+          propertyTitle={imagesProperty.title}
+          verificationStatus={imagesProperty.verification_status}
+          canEdit={
+            canUpdate &&
+            (
+              manager ||
+              (
+                account?.id !== undefined &&
+                imagesProperty.created_by === account.id
+              )
+            )
+          }
+          onChanged={() => {
+            setReload((value) => value + 1);
+          }}
+          onClose={() => setImagesProperty(null)}
+        />
+      )}
+
       {documentsProperty !== null && (
         <PropertyDocumentsModal
           propertyId={documentsProperty.id}
@@ -482,6 +506,13 @@ export default function Page() {
                           Manage Documents
                         </button>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => setImagesProperty(property)}
+                        className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-[#263956]"
+                      >
+                        Manage Images
+                      </button>
                       {canUpdate && (
                         manager || (
                           account?.id !== undefined &&
