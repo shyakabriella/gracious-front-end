@@ -264,6 +264,23 @@ export default function LeadsPage() {
     }
   }
 
+  async function refreshSelectedLead(leadId: number) {
+    const data = await requestApi(
+      `leads/${leadId}`,
+    ) as { lead?: Lead };
+
+    if (!data.lead || data.lead.id !== leadId) {
+      throw new Error("Invalid updated lead response.");
+    }
+
+    // Never reopen a lead that the user has already closed.
+    setSelected((current) =>
+      current?.id === leadId
+        ? { ...current, ...data.lead }
+        : current
+    );
+  }
+
   async function runAction(action: () => Promise<void>) {
     if (busy) return;
 
@@ -369,6 +386,7 @@ export default function LeadsPage() {
       setScheduledAt("");
       await loadActivities(selected);
       setReload((n) => n + 1);
+      await refreshSelectedLead(selected.id);
       setNotice("Activity recorded successfully.");
     });
   }
@@ -385,6 +403,7 @@ export default function LeadsPage() {
 
       await loadActivities(selected);
       setReload((n) => n + 1);
+      await refreshSelectedLead(selected.id);
       setNotice("Follow-up completed successfully.");
     });
   }
@@ -679,6 +698,26 @@ export default function LeadsPage() {
                 </p>
               </div>
               <button onClick={() => setSelected(null)} aria-label="Close lead details">✕</button>
+            </div>
+
+            <div className="rounded-xl border border-[#dfe5f0] bg-[#f8f9ff] p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#8190a9]">
+                Next Follow-up
+              </p>
+
+              <p className="mt-2 text-sm font-bold text-[#263956]">
+                {selected.next_follow_up_at &&
+                !Number.isNaN(Date.parse(selected.next_follow_up_at))
+                  ? new Date(selected.next_follow_up_at).toLocaleString("en-RW", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })
+                  : "No pending follow-up scheduled"}
+              </p>
+
+              <p className="mt-1 text-xs text-slate-500">
+                Earliest pending follow-up calculated by Laravel.
+              </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
