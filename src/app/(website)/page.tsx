@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Hero from "@/components/website/Hero";
 import PopularProperties from "@/components/website/PopularProperties";
 import Services from "@/components/website/Services";
@@ -6,7 +7,18 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <PopularProperties />
+      <Suspense
+        fallback={
+          <section
+            className="bg-[#f8faf9] px-5 py-24 text-center text-sm text-slate-500"
+            aria-label="Featured properties loading"
+          >
+            Loading featured properties...
+          </section>
+        }
+      >
+        <PopularProperties />
+      </Suspense>
       <Services />
     </>
   );

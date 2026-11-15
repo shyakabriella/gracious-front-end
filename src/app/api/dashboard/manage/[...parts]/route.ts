@@ -34,6 +34,27 @@ function resolveEndpoint(
     return `/staff/${parts[1]}/invitation/resend`;
   }
 
+  // Property Management: list properties.
+  if (
+    method === "GET" &&
+    parts.length === 1 &&
+    parts[0] === "properties"
+  ) {
+    return "/properties";
+  }
+
+  // Featured Properties: dedicated administrator-controlled endpoint.
+  // Laravel validates eligibility and authorization.
+  if (
+    method === "PATCH" &&
+    parts.length === 3 &&
+    parts[0] === "properties" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "featured"
+  ) {
+    return `/properties/${parts[1]}/featured`;
+  }
+
   // CRM: Archive and Restore
   if (
     method === "GET" &&
@@ -233,7 +254,7 @@ async function handle(
     const query =
       method === "GET" &&
       (
-        ["/users", "/customers", "/leads", "/crm/follow-ups", "/crm/unassigned-leads"].includes(endpoint) ||
+        ["/users", "/customers", "/leads", "/properties", "/crm/follow-ups", "/crm/unassigned-leads"].includes(endpoint) ||
         endpoint === "/customers/archived" ||
         endpoint === "/leads/archived"
       )

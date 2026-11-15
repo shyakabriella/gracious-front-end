@@ -1,8 +1,127 @@
 import Link from "next/link";
 import PropertyCard from "@/components/website/PropertyCard";
-import { popularProperties } from "@/lib/properties";
+import { apiUrl } from "@/lib/auth/server";
+import type { Property } from "@/types/property";
 
-export default function PopularProperties() {
+type FeaturedApiProperty = {
+  reference?: string;
+  title: string;
+  slug: string;
+  asking_price: string | number;
+  currency?: string;
+  province?: string | null;
+  district?: string | null;
+  sector?: string | null;
+  address?: string | null;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  cover_image?: {
+    url?: string | null;
+  } | null;
+};
+
+type FeaturedResult = {
+  properties: Property[];
+  available: boolean;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+  );
+}
+
+function isFeaturedProperty(value: unknown): value is FeaturedApiProperty {
+  return (
+    isRecord(value) &&
+    typeof value.title === "string" &&
+    value.title.length > 0 &&
+    typeof value.slug === "string" &&
+    value.slug.length > 0 &&
+    (typeof value.asking_price === "string" ||
+      typeof value.asking_price === "number")
+  );
+}
+
+async function getFeaturedProperties(): Promise<FeaturedResult> {
+  try {
+    const response = await fetch(apiUrl("/public/home"), {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Public property API unavailable");
+    }
+
+    const payload: unknown = await response.json();
+
+    if (
+      !isRecord(payload) ||
+      !Array.isArray(payload.featured_properties)
+    ) {
+      throw new Error("Invalid public property response");
+    }
+
+    const properties: Property[] = payload.featured_properties
+      .filter(isFeaturedProperty)
+      .map((property) => {
+        const price = Number(property.asking_price);
+
+        const address = [
+          property.address,
+          property.sector,
+          property.district,
+          property.province,
+        ]
+          .filter(
+            (part): part is string =>
+              typeof part === "string" && part.trim().length > 0
+          )
+          .join(", ");
+
+        return {
+          id: property.slug,
+          slug: property.slug,
+          price,
+          currency: property.currency || "RWF",
+          address: address || "Rwanda",
+          location: property.title,
+          beds:
+            typeof property.bedrooms === "number"
+              ? property.bedrooms
+              : null,
+          baths:
+            typeof property.bathrooms === "number"
+              ? property.bathrooms
+              : null,
+          image:
+            typeof property.cover_image?.url === "string" &&
+            /^https?:\/\//.test(property.cover_image.url)
+              ? property.cover_image.url
+              : null,
+        };
+      })
+      .filter(
+        (property) =>
+          Number.isFinite(property.price) && property.price > 0
+      );
+
+    return { properties, available: true };
+  } catch {
+    return { properties: [], available: false };
+  }
+}
+
+
+
+export default async function PopularProperties() {
+  const { properties, available } = await getFeaturedProperties();
+
   return (
     <section
       id="featured-properties"
@@ -70,9 +189,9 @@ export default function PopularProperties() {
         </div>
 
         {/* Property listings */}
-        {popularProperties.length > 0 ? (
+        {properties.length > 0 ? (
           <div className="mt-12 grid gap-7 sm:grid-cols-2 lg:mt-14 lg:grid-cols-3 lg:gap-8">
-            {popularProperties.map((property, index) => (
+            {properties.map((property, index) => (
               <div
                 key={property.id}
                 className="gracious-property-reveal min-w-0"
@@ -90,11 +209,13 @@ export default function PopularProperties() {
               bg-white px-6 py-14 text-center"
           >
             <h3 className="text-xl font-semibold text-[#123b39]">
-              Property listings are coming soon
+              {available
+                ? "Featured properties are coming soon"
+                : "Featured properties are temporarily unavailable"}
             </h3>
 
             <p className="mx-auto mt-3 max-w-lg text-slate-600">
-              Please check back for new property listings,
+              Please check back for available featured properties,
               or contact Gracious Investment for assistance.
             </p>
 

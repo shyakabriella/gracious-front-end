@@ -23,18 +23,31 @@ export default function PropertyCard({ property }: { property: Property }) {
   return (
     <article className="overflow-hidden border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-lg">
       <div className="relative aspect-[4/3] w-full">
-        <Image
-          src={property.image}
-          alt={`${property.location} property`}
-          fill
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover"
-        />
+        {property.image ? (
+          <Image
+            src={property.image}
+            alt={`${property.location} property`}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-slate-100 px-5 text-center text-sm text-slate-500">
+            Property photo coming soon
+          </div>
+        )}
       </div>
 
       <div className="px-9 pb-10 pt-10">
         <p className="inline-block border-b-2 border-[#025a58] pb-1 text-2xl font-semibold text-[#025a58]">
-          {formatPrice(property.price)}
+          {property.currency
+            ? new Intl.NumberFormat("en-RW", {
+                style: "currency",
+                currency: property.currency,
+                maximumFractionDigits: 0,
+              }).format(property.price)
+            : formatPrice(property.price)}
         </p>
 
         <p className="mt-4 text-[15px] tracking-wide text-gray-500">
@@ -48,11 +61,11 @@ export default function PropertyCard({ property }: { property: Property }) {
         <div className="mt-6 flex items-center gap-6 text-gray-500">
           <span className="flex items-center gap-2 text-[15px]">
             <BedIcon />
-            {property.beds} beds
+            {property.beds ?? "—"} beds
           </span>
           <span className="flex items-center gap-2 text-[15px]">
             <BathIcon />
-            {property.baths} baths
+            {property.baths ?? "—"} baths
           </span>
         </div>
 
