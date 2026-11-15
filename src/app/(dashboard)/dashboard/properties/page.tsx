@@ -5,6 +5,7 @@ import { apiError, readJson } from "@/lib/crm/customers";
 import PropertyRegistrationForm from "@/components/properties/PropertyRegistrationForm";
 import PropertyDetailsModal from "@/components/properties/PropertyDetailsModal";
 import PropertyEditModal from "@/components/properties/PropertyEditModal";
+import PropertyDocumentsModal from "@/components/properties/PropertyDocumentsModal";
 
 type Property = {
   id: number;
@@ -59,6 +60,7 @@ export default function Page() {
   const [records, setRecords] = useState<PropertyPage | null>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
   const [editingPropertyId, setEditingPropertyId] = useState<number | null>(null);
+  const [documentsProperty, setDocumentsProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -333,6 +335,24 @@ export default function Page() {
         />
       )}
 
+      {documentsProperty !== null && (
+        <PropertyDocumentsModal
+          propertyId={documentsProperty.id}
+          propertyTitle={documentsProperty.title}
+          canEdit={
+            canUpdate &&
+            (
+              manager ||
+              (
+                account?.id !== undefined &&
+                documentsProperty.created_by === account.id
+              )
+            )
+          }
+          onClose={() => setDocumentsProperty(null)}
+        />
+      )}
+
       {editingPropertyId !== null && (
         <PropertyEditModal
           propertyId={editingPropertyId}
@@ -447,6 +467,21 @@ export default function Page() {
                       >
                         View Details
                       </button>
+                      {(
+                        manager ||
+                        (
+                          account?.id !== undefined &&
+                          property.created_by === account.id
+                        )
+                      ) && (
+                        <button
+                          type="button"
+                          onClick={() => setDocumentsProperty(property)}
+                          className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-[#263956]"
+                        >
+                          Manage Documents
+                        </button>
+                      )}
                       {canUpdate && (
                         manager || (
                           account?.id !== undefined &&
