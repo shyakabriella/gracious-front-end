@@ -49,7 +49,7 @@ function resolveEndpoint(
   if (
     parts.length === 2 &&
     parts[0] === "owners" &&
-    /^[1-9]\\d*$/.test(parts[1]) &&
+    /^[1-9]\d*$/.test(parts[1]) &&
     ["GET", "PUT", "DELETE"].includes(method)
   ) {
     return `/owners/${parts[1]}`;
@@ -60,11 +60,37 @@ function resolveEndpoint(
   if (
     parts.length === 3 &&
     parts[0] === "owners" &&
-    /^[1-9]\\d*$/.test(parts[1]) &&
+    /^[1-9]\d*$/.test(parts[1]) &&
     parts[2] === "properties" &&
     method === "GET"
   ) {
     return `/owners/${parts[1]}/properties`;
+  }
+
+  // Property Ownership: view and attach owners.
+  // Laravel enforces properties.view / properties.update,
+  // owners.view, and record-level authorization.
+  if (
+    parts.length === 3 &&
+    parts[0] === "properties" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "owners" &&
+    ["GET", "POST"].includes(method)
+  ) {
+    return `/properties/${parts[1]}/owners`;
+  }
+
+  // Property Ownership: remove an owner-property relationship.
+  // This does not archive or delete the owner.
+  if (
+    method === "DELETE" &&
+    parts.length === 4 &&
+    parts[0] === "properties" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "owners" &&
+    /^[1-9]\d*$/.test(parts[3])
+  ) {
+    return `/properties/${parts[1]}/owners/${parts[3]}`;
   }
 
   // Property Management: list properties.

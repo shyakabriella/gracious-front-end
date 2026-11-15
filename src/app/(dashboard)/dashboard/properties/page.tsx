@@ -7,6 +7,7 @@ import PropertyDetailsModal from "@/components/properties/PropertyDetailsModal";
 import PropertyEditModal from "@/components/properties/PropertyEditModal";
 import PropertyDocumentsModal from "@/components/properties/PropertyDocumentsModal";
 import PropertyImagesModal from "@/components/properties/PropertyImagesModal";
+import PropertyOwnersModal from "@/components/properties/PropertyOwnersModal";
 
 type Property = {
   id: number;
@@ -63,6 +64,7 @@ export default function Page() {
   const [editingPropertyId, setEditingPropertyId] = useState<number | null>(null);
   const [documentsProperty, setDocumentsProperty] = useState<Property | null>(null);
   const [imagesProperty, setImagesProperty] = useState<Property | null>(null);
+  const [ownersProperty, setOwnersProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -337,6 +339,25 @@ export default function Page() {
         />
       )}
 
+      {ownersProperty !== null && (
+        <PropertyOwnersModal
+          propertyId={ownersProperty.id}
+          propertyTitle={ownersProperty.title}
+          canEdit={
+            canUpdate &&
+            (
+              manager ||
+              (
+                account?.id !== undefined &&
+                ownersProperty.created_by === account.id
+              )
+            )
+          }
+          onChanged={() => setReload((value) => value + 1)}
+          onClose={() => setOwnersProperty(null)}
+        />
+      )}
+
       {imagesProperty !== null && (
         <PropertyImagesModal
           propertyId={imagesProperty.id}
@@ -504,6 +525,15 @@ export default function Page() {
                           className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-[#263956]"
                         >
                           Manage Documents
+                        </button>
+                      )}
+                      {account?.permissions?.includes("owners.view") && (
+                        <button
+                          type="button"
+                          onClick={() => setOwnersProperty(property)}
+                          className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-[#263956]"
+                        >
+                          Manage Owners
                         </button>
                       )}
                       <button
