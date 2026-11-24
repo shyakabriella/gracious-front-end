@@ -51,7 +51,7 @@ const navigation: NavItem[] = [
   },
 ];
 
-const listingHref = "/contact?subject=list-property";
+const listingHref = "/list-your-property";
 
 function ChevronDown() {
   return (
