@@ -93,6 +93,176 @@ function resolveEndpoint(
     return `/properties/${parts[1]}/owners/${parts[3]}`;
   }
 
+  // Property Viewings: schedule appointment.
+  // Laravel validates lead ownership, matching property, time and overlaps.
+  if (
+    method === "POST" &&
+    parts.length === 1 &&
+    parts[0] === "viewings"
+  ) {
+    return "/viewings";
+  }
+
+  // Property Viewings: seven dashboard operations.
+  // Laravel enforces agent ownership and workflow transitions.
+  if (
+    parts.length === 1 &&
+    parts[0] === "viewings" &&
+    method === "GET"
+  ) {
+    return "/viewings";
+  }
+
+  if (
+    parts.length === 2 &&
+    parts[0] === "viewings" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    method === "GET"
+  ) {
+    return `/viewings/${parts[1]}`;
+  }
+
+  if (
+    parts.length === 3 &&
+    parts[0] === "viewings" &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    if (method === "GET" && parts[2] === "history") {
+      return `/viewings/${parts[1]}/history`;
+    }
+
+    if (
+      method === "PATCH" &&
+      ["confirm", "cancel", "complete", "no-show"].includes(parts[2])
+    ) {
+      return `/viewings/${parts[1]}/${parts[2]}`;
+    }
+  }
+
+  // Sales legal completion documents, final completion and audit history.
+  // Laravel owns permissions, payment reconciliation and status changes.
+  if (
+    parts.length === 3 &&
+    parts[0] === "sales" &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    if (
+      method === "GET" &&
+      ["completion-documents", "history"].includes(parts[2])
+    ) {
+      return `/sales/${parts[1]}/${parts[2]}`;
+    }
+
+    if (method === "PATCH" && parts[2] === "complete") {
+      return `/sales/${parts[1]}/complete`;
+    }
+  }
+
+  // Sales payment evidence listing and payment reviews.
+  // Laravel enforces ownership, role checks and payment state.
+  if (
+    parts.length === 5 &&
+    parts[0] === "sales" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "payments" &&
+    /^[1-9]\d*$/.test(parts[3])
+  ) {
+    if (method === "GET" && parts[4] === "evidences") {
+      return `/sales/${parts[1]}/payments/${parts[3]}/evidences`;
+    }
+
+    if (
+      method === "PATCH" &&
+      ["verify", "reject"].includes(parts[4])
+    ) {
+      return `/sales/${parts[1]}/payments/${parts[3]}/${parts[4]}`;
+    }
+  }
+
+  // Sales payment listing and recording.
+  // Laravel validates amounts, sale status and user permissions.
+  if (
+    (method === "GET" || method === "POST") &&
+    parts.length === 3 &&
+    parts[0] === "sales" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "payments"
+  ) {
+    return `/sales/${parts[1]}/payments`;
+  }
+
+  // Sales agreement and cancellation status transitions.
+  // Laravel remains responsible for authorization and validation.
+  if (
+    method === "PATCH" &&
+    parts.length === 3 &&
+    parts[0] === "sales" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    ["agreement", "pending-completion", "cancel"].includes(parts[2])
+  ) {
+    return `/sales/${parts[1]}/${parts[2]}`;
+  }
+
+  // Property Sales: list and create transactions.
+  // Laravel enforces role-based authorization and sales rules.
+  if (
+    parts.length === 1 &&
+    parts[0] === "sales" &&
+    ["GET", "POST"].includes(method)
+  ) {
+    return "/sales";
+  }
+
+  // Property Sales: view a specific transaction.
+  if (
+    method === "GET" &&
+    parts.length === 2 &&
+    parts[0] === "sales" &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    return `/sales/${parts[1]}`;
+  }
+
+  // Rental lifecycle: status changes and audit history.
+  // Laravel enforces rentals.update, authorized roles,
+  // valid transitions and financial adjustment rules.
+  if (
+    parts.length === 3 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    if (method === "GET" && parts[2] === "history") {
+      return `/rentals/${parts[1]}/history`;
+    }
+
+    if (
+      method === "PATCH" &&
+      ["activate", "cancel", "terminate", "expire"].includes(parts[2])
+    ) {
+      return `/rentals/${parts[1]}/${parts[2]}`;
+    }
+  }
+
+  // Rental draft creation and editing.
+  // Laravel enforces roles, permissions, property eligibility,
+  // rental date overlaps and draft-only update rules.
+  if (
+    method === "POST" &&
+    parts.length === 1 &&
+    parts[0] === "rentals"
+  ) {
+    return "/rentals";
+  }
+
+  if (
+    method === "PATCH" &&
+    parts.length === 2 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1])
+  ) {
+    return `/rentals/${parts[1]}`;
+  }
+
   // Rental Management: list rental agreements.
   // Laravel enforces rentals.view and role-based access.
   if (
@@ -123,6 +293,134 @@ function resolveEndpoint(
     parts[2] === "statement"
   ) {
     return `/rentals/${parts[1]}/statement`;
+  }
+
+  // Independent refund reconciliation.
+  // Laravel validates an independent authorized reviewer,
+  // external-record attestation, evidence integrity,
+  // matching recipient, amount, currency and transaction.
+  // Only Laravel may set the final paid or failed status.
+  if (
+    method === "POST" &&
+    parts.length === 5 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "refunds" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    parts[4] === "reconcile"
+  ) {
+    return `/rentals/${parts[1]}/refunds/${parts[3]}/reconcile`;
+  }
+
+  // Refund evidence history: metadata only.
+  // Uploads and downloads use the separate private evidence proxy.
+  // Laravel enforces access to the rental and its refund.
+  if (
+    method === "GET" &&
+    parts.length === 5 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "refunds" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    parts[4] === "evidences"
+  ) {
+    return `/rentals/${parts[1]}/refunds/${parts[3]}/evidences`;
+  }
+
+  // Refund processing.
+  // Laravel checks approved refund and destination,
+  // authorized independent processor, transfer method,
+  // and unique transaction reference.
+  // Processing does not establish that money was paid.
+  if (
+    method === "PATCH" &&
+    parts.length === 5 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "refunds" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    parts[4] === "process"
+  ) {
+    return `/rentals/${parts[1]}/refunds/${parts[3]}/process`;
+  }
+
+  // Refund destination recording and independent approval.
+  // Laravel validates refund status, roles and independence.
+  if (
+    method === "POST" &&
+    parts.length === 5 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "refunds" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    parts[4] === "destination"
+  ) {
+    return `/rentals/${parts[1]}/refunds/${parts[3]}/destination`;
+  }
+
+  if (
+    method === "PATCH" &&
+    parts.length === 6 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "refunds" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    parts[4] === "destination" &&
+    parts[5] === "approve"
+  ) {
+    return `/rentals/${parts[1]}/refunds/${parts[3]}/destination/approve`;
+  }
+
+  // Refund approval and rejection actions.
+  // Laravel enforces administrator permissions, status
+  // transitions, and independence from the requester.
+  if (
+    method === "PATCH" &&
+    parts.length === 5 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "refunds" &&
+    /^[1-9]\d*$/.test(parts[3]) &&
+    ["approve", "reject"].includes(parts[4])
+  ) {
+    return `/rentals/${parts[1]}/refunds/${parts[3]}/${parts[4]}`;
+  }
+
+  // Rental refunds: list requests and available refundable balance.
+  // Laravel computes available credit and checks rental access.
+  if (
+    method === "GET" &&
+    parts.length === 3 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "refunds"
+  ) {
+    return `/rentals/${parts[1]}/refunds`;
+  }
+
+  // Rental refunds: request a pending refund only.
+  // Laravel checks verified source payments, rental status,
+  // permissions, and reserved refundable balance.
+  if (
+    method === "POST" &&
+    parts.length === 3 &&
+    parts[0] === "rentals" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    parts[2] === "refunds"
+  ) {
+    return `/rentals/${parts[1]}/refunds`;
+  }
+
+  // Central payments dashboard: read-only.
+  // Laravel enforces rental and sales permissions independently.
+  // No payment creation, approval or refund actions are exposed.
+  if (
+    method === "GET" &&
+    parts.length === 2 &&
+    parts[0] === "dashboard" &&
+    parts[1] === "payments"
+  ) {
+    return "/dashboard/payments";
   }
 
   // Rental payments: list and record payments.
@@ -228,6 +526,24 @@ function resolveEndpoint(
     parts[2] === "featured"
   ) {
     return `/properties/${parts[1]}/featured`;
+  }
+
+  // Property Workflow: explicit API operation allowlist.
+  // Laravel enforces roles, permissions and business rules.
+  if (
+    parts.length === 3 &&
+    parts[0] === "properties" &&
+    /^[1-9]\d*$/.test(parts[1]) &&
+    (
+      (parts[2] === "submit" && method === "POST") ||
+      (parts[2] === "verification" && method === "PATCH") ||
+      (parts[2] === "verification-history" && method === "GET") ||
+      (parts[2] === "publish" && method === "PATCH") ||
+      (parts[2] === "availability" && method === "PATCH") ||
+      (parts[2] === "assign-agent" && method === "PATCH")
+    )
+  ) {
+    return `/properties/${parts[1]}/${parts[2]}`;
   }
 
   // CRM: Archive and Restore

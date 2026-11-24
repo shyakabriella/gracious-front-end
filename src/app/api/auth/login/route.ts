@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       "admin",
       "agent",
       "property_manager",
+      "accountant",
     ];
 
     const allowed =

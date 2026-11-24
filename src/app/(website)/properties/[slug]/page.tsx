@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { apiUrl } from "@/lib/auth/server";
+import PropertyInquiryForm from "@/components/website/PropertyInquiryForm";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -294,6 +295,11 @@ async function PropertyDetailsContent({ params }: PageProps) {
             <p className="mt-4 leading-7 text-slate-600">
               Contact our team for more information or to arrange a viewing.
             </p>
+
+            <PropertyInquiryForm
+              slug={property.slug}
+              listingType={property.listing_type}
+            />
 
             <Link
               href="/contact"

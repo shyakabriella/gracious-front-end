@@ -22,7 +22,7 @@ type MenuItem = {
   label: string;
   href: string;
   icon: MenuIconName;
-  permission?: string;
+  permission?: string | string[];
 };
 
 const sections: {
@@ -89,11 +89,13 @@ const sections: {
         label: "Payments",
         href: "/dashboard/payments",
         icon: "payments",
+        permission: ["sales.view", "rentals.view"],
       },
       {
         label: "Refunds",
         href: "/dashboard/refunds",
         icon: "refunds",
+        permission: "rentals.view",
       },
     ],
   },
@@ -167,7 +169,12 @@ export default function Sidebar({ user, onNavigate }: Props) {
           const items = section.items.filter((item) =>
             customerOnly
               ? item.href === "/dashboard"
-              : !item.permission || permissions.has(item.permission),
+              : !item.permission ||
+                (Array.isArray(item.permission)
+                  ? item.permission.some((permission) =>
+                      permissions.has(permission),
+                    )
+                  : permissions.has(item.permission)),
           );
 
           if (!items.length) return null;

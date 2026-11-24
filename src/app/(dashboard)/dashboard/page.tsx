@@ -58,10 +58,8 @@ function PanelHeading({
 async function DashboardContent() {
   const user = await getAuthenticatedUser();
 
-  if (
-    user?.roles.includes("customer") &&
-    !user.permissions.includes("dashboard.view")
-  ) {
+  // Customer accounts must never render the internal dashboard.
+  if (user?.roles.includes("customer")) {
     return <CustomerDashboard />;
   }
 

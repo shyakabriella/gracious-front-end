@@ -8,6 +8,7 @@ import PropertyEditModal from "@/components/properties/PropertyEditModal";
 import PropertyDocumentsModal from "@/components/properties/PropertyDocumentsModal";
 import PropertyImagesModal from "@/components/properties/PropertyImagesModal";
 import PropertyOwnersModal from "@/components/properties/PropertyOwnersModal";
+import PropertyWorkflowModal from "@/components/properties/PropertyWorkflowModal";
 
 type Property = {
   id: number;
@@ -65,6 +66,7 @@ export default function Page() {
   const [documentsProperty, setDocumentsProperty] = useState<Property | null>(null);
   const [imagesProperty, setImagesProperty] = useState<Property | null>(null);
   const [ownersProperty, setOwnersProperty] = useState<Property | null>(null);
+  const [workflowProperty, setWorkflowProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -339,6 +341,19 @@ export default function Page() {
         />
       )}
 
+      {workflowProperty !== null && account !== null && (
+        <PropertyWorkflowModal
+          key={workflowProperty.id}
+          propertyId={workflowProperty.id}
+          propertyTitle={workflowProperty.title}
+          account={account}
+          onChanged={() => {
+            setReload((value) => value + 1);
+          }}
+          onClose={() => setWorkflowProperty(null)}
+        />
+      )}
+
       {ownersProperty !== null && (
         <PropertyOwnersModal
           propertyId={ownersProperty.id}
@@ -527,6 +542,32 @@ export default function Page() {
                           Manage Documents
                         </button>
                       )}
+                      {(
+                        (
+                          canUpdate &&
+                          (
+                            manager ||
+                            (
+                              account?.id !== undefined &&
+                              property.created_by === account.id
+                            )
+                          )
+                        ) ||
+                        (
+                          manager &&
+                          account?.permissions?.includes("properties.verify")
+                        ) ||
+                        account?.permissions?.includes("properties.publish")
+                      ) && (
+                        <button
+                          type="button"
+                          onClick={() => setWorkflowProperty(property)}
+                          className="rounded-lg border border-indigo-300 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-800 hover:bg-indigo-100"
+                        >
+                          Manage Workflow
+                        </button>
+                      )}
+
                       {account?.permissions?.includes("owners.view") && (
                         <button
                           type="button"

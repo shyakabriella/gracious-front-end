@@ -1,6 +1,9 @@
 "use client";
 
 import RentalPaymentsModal from "@/components/rentals/RentalPaymentsModal";
+import RentalRefundsModal from "@/components/rentals/RentalRefundsModal";
+import RentalLifecycleModal from "@/components/rentals/RentalLifecycleModal";
+import RentalAgreementFormModal from "@/components/rentals/RentalAgreementFormModal";
 
 import { useEffect, useState } from "react";
 import { apiError, readJson } from "@/lib/crm/customers";
@@ -132,8 +135,17 @@ export default function Page() {
   const [error, setError] = useState("");
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [formRental, setFormRental] = useState<"new" | Rental | null>(null);
+  const [lifecycleRental, setLifecycleRental] = useState<{ id: number; reference: string } | null>(null);
 
   const [paymentRental, setPaymentRental] = useState<{
+    id: number;
+    reference: string;
+    status: string;
+    currency: string;
+  } | null>(null);
+
+  const [refundRental, setRefundRental] = useState<{
     id: number;
     reference: string;
     status: string;
@@ -147,6 +159,19 @@ export default function Page() {
 
   const canView =
     account?.permissions?.includes("rentals.view") ?? false;
+
+  const canManageRental =
+    account?.roles?.some((role) =>
+      ["super_admin", "admin", "property_manager"].includes(role),
+    ) ?? false;
+
+  const canCreateRental =
+    canManageRental &&
+    (account?.permissions?.includes("rentals.create") ?? false);
+
+  const canEditDraft =
+    canManageRental &&
+    (account?.permissions?.includes("rentals.update") ?? false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -389,6 +414,18 @@ export default function Page() {
           </p>
         </div>
 
+        <div className="flex flex-wrap items-center gap-3">
+          {canCreateRental && (
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => setFormRental("new")}
+              className="rounded-lg bg-[#263956] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+            >
+              + Register Rental Agreement
+            </button>
+          )}
+
         <button
           type="button"
           className={buttonClass}
@@ -397,6 +434,7 @@ export default function Page() {
         >
           Refresh
         </button>
+        </div>
       </div>
 
       <section className="rounded-2xl border bg-white p-4 shadow-sm">
@@ -490,6 +528,18 @@ export default function Page() {
                         >
                           View Statement
                         </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setLifecycleRental({
+                              id: rental.id,
+                              reference: rental.reference,
+                            })
+                          }
+                          className={buttonClass}
+                        >
+                          Lease Status &amp; History
+                        </button>
 
                         <button
                           type="button"
@@ -504,6 +554,21 @@ export default function Page() {
                           className={buttonClass}
                         >
                           Manage Payments
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setRefundRental({
+                              id: rental.id,
+                              reference: rental.reference,
+                              status: rental.status,
+                              currency: rental.currency,
+                            })
+                          }
+                          className={buttonClass}
+                        >
+                          Manage Refunds
                         </button>
                       </div>
                     </td>
@@ -718,7 +783,19 @@ export default function Page() {
               </>
             )}
 
-            <div className="mt-7 flex justify-end border-t pt-4">
+            <div className="mt-7 flex justify-end gap-3 border-t pt-4">
+              {selected?.status === "draft" && canEditDraft && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormRental(selected);
+                    setSelectedId(null);
+                  }}
+                  className="rounded-lg bg-[#263956] px-4 py-2 text-sm font-bold text-white"
+                >
+                  Edit Draft
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setSelectedId(null)}
@@ -731,6 +808,17 @@ export default function Page() {
         </div>
       )}
 
+      {lifecycleRental && account && (
+        <RentalLifecycleModal
+          key={lifecycleRental.id}
+          account={account}
+          rentalId={lifecycleRental.id}
+          rentalReference={lifecycleRental.reference}
+          onClose={() => setLifecycleRental(null)}
+          onChanged={() => setReload((value) => value + 1)}
+        />
+      )}
+
       {paymentRental && account && (
         <RentalPaymentsModal
           key={paymentRental.id}
@@ -741,6 +829,34 @@ export default function Page() {
           account={account}
           onClose={() => setPaymentRental(null)}
           onChanged={() => setReload((value) => value + 1)}
+        />
+      )}
+
+      {refundRental && account && (
+        <RentalRefundsModal
+          key={refundRental.id}
+          rentalId={refundRental.id}
+          rentalReference={refundRental.reference}
+          rentalStatus={refundRental.status}
+          currency={refundRental.currency}
+          account={account}
+          onClose={() => setRefundRental(null)}
+          onChanged={() => setReload((value) => value + 1)}
+        />
+      )}
+      {formRental !== null && account !== null && (
+        <RentalAgreementFormModal
+          key={formRental === "new" ? "new" : formRental.id}
+          account={account}
+          rental={formRental === "new" ? null : formRental}
+          onClose={() => setFormRental(null)}
+          onSaved={() => {
+            setFormRental(null);
+            setSelectedId(null);
+            setStatus("all");
+            setPage(1);
+            setReload((value) => value + 1);
+          }}
         />
       )}
     </main>

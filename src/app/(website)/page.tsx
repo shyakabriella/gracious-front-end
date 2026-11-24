@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Hero from "@/components/website/Hero";
 import PopularProperties from "@/components/website/PopularProperties";
+import PublicHomeStats from "@/components/website/PublicHomeStats";
 import Services from "@/components/website/Services";
 
 export default function HomePage() {
@@ -19,6 +20,10 @@ export default function HomePage() {
       >
         <PopularProperties />
       </Suspense>
+      <Suspense fallback={null}>
+        <PublicHomeStats />
+      </Suspense>
+
       <Services />
     </>
   );
