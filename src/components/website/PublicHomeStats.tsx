@@ -94,15 +94,15 @@ export default async function PublicHomeStats() {
   return (
     <section
       aria-label="Gracious Investment property statistics"
-      className="bg-[#f8faf9] px-5 py-12 sm:px-8"
+      className="bg-[#FAF7EF] px-5 py-12 sm:px-8"
     >
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#02716d]">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8A611A]">
             Our Property Portfolio
           </p>
 
-          <h2 className="mt-3 text-2xl font-semibold text-[#123b39] sm:text-3xl">
+          <h2 className="mt-3 text-2xl font-semibold text-[#003020] sm:text-3xl">
             Find Your Next Property
           </h2>
 
@@ -115,13 +115,13 @@ export default async function PublicHomeStats() {
           {items.map((item) => (
             <div
               key={item.label}
-              className="rounded-2xl border border-slate-200 bg-white px-6 py-7 text-center shadow-sm"
+              className="rounded-2xl border border-[#E8DEC8] bg-white px-6 py-7 text-center shadow-sm"
             >
-              <p className="text-4xl font-bold tabular-nums text-[#025a58]">
+              <p className="text-4xl font-bold tabular-nums text-[#9D6F18]">
                 {item.value.toLocaleString("en-RW")}
               </p>
 
-              <p className="mt-3 text-sm font-semibold text-[#123b39]">
+              <p className="mt-3 text-sm font-semibold text-[#003020]">
                 {item.label}
               </p>
             </div>

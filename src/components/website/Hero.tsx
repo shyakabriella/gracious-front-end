@@ -24,7 +24,7 @@ export default function Hero() {
     <section
       aria-labelledby="hero-heading"
       className="relative isolate flex min-h-[740px]
-        items-center overflow-hidden bg-[#073c3b]
+        items-center overflow-hidden bg-[#003020]
         px-5 pb-24 pt-40 text-white
         sm:min-h-[780px] sm:px-8
         lg:min-h-screen lg:pb-32 lg:pt-44"
@@ -33,7 +33,7 @@ export default function Hero() {
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0
-          bg-[radial-gradient(ellipse_at_75%_30%,#187d72_0%,transparent_45%),linear-gradient(125deg,#073c3b_10%,#025a58_58%,#073c3b_100%)]"
+          bg-[radial-gradient(ellipse_at_75%_30%,#655A32_0%,transparent_45%),linear-gradient(125deg,#003020_10%,#004D37_58%,#003020_100%)]"
       />
 
       <div
@@ -74,7 +74,7 @@ export default function Hero() {
             gap-2 rounded-full border border-white/20
             bg-white/10 px-5 py-2 text-xs
             font-medium tracking-[0.16em]
-            text-teal-50 backdrop-blur-sm
+            text-[#F8EDD2] backdrop-blur-sm
             sm:text-sm"
         >
           REAL ESTATE IN RWANDA
@@ -89,13 +89,13 @@ export default function Hero() {
             lg:text-[4.5rem]"
         >
           Find a place to call{" "}
-          <span className="text-[#c5e5d9]">your own.</span>
+          <span className="text-[#FFD050]">your own.</span>
         </h1>
 
         <p
           className="gracious-hero-enter gracious-hero-delay-3
             mx-auto mt-7 max-w-2xl text-base
-            leading-8 text-teal-50/90
+            leading-8 text-[#F8EDD2]/90
             sm:text-lg"
         >
           Discover houses, apartments, land and investment
@@ -127,7 +127,7 @@ export default function Hero() {
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="shrink-0 text-[#025a58]"
+              className="shrink-0 text-[#003020]"
             >
               <circle cx="11" cy="11" r="7" />
               <path d="m16 16 4 4" />
@@ -156,14 +156,14 @@ export default function Hero() {
           <button
             type="submit"
             className="inline-flex h-14 shrink-0 items-center
-              justify-center rounded-xl bg-[#025a58]
-              px-9 font-semibold text-white
+              justify-center rounded-xl bg-[#E0A020]
+              px-9 font-semibold text-[#003020]
               transition-[background-color,transform,box-shadow]
-              duration-200 hover:bg-[#047370]
+              duration-200 hover:bg-[#FFD050]
               hover:shadow-md active:scale-[0.98]
               focus-visible:outline-2
               focus-visible:outline-offset-2
-              focus-visible:outline-[#025a58]
+              focus-visible:outline-[#E0A020]
               sm:rounded-full
               motion-reduce:transform-none
               motion-reduce:transition-none"
@@ -177,9 +177,9 @@ export default function Hero() {
           className="gracious-hero-enter gracious-hero-delay-5
             mt-7 flex flex-wrap items-center
             justify-center gap-x-5 gap-y-3
-            text-sm text-teal-50/90"
+            text-sm text-[#F8EDD2]/90"
         >
-          <span className="text-teal-100/70">
+          <span className="text-[#D6BE80]/70">
             Explore:
           </span>
 
@@ -214,7 +214,7 @@ export default function Hero() {
         <p
           className="gracious-hero-enter gracious-hero-delay-5
             mt-16 text-xs font-medium uppercase
-            tracking-[0.2em] text-teal-100/70"
+            tracking-[0.2em] text-[#D6BE80]/70"
         >
           Your Property, Our Commitment.
         </p>

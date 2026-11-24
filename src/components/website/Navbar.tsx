@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
@@ -123,20 +124,30 @@ export default function Navbar() {
     <header className="fixed inset-x-3 top-4 z-50 md:inset-x-[5.5%]">
       <nav
         aria-label="Main navigation"
-        className="rounded-lg bg-[#025a58] px-5 py-4 shadow-lg md:px-7 lg:px-9"
+        className="rounded-lg bg-[#003020] px-5 py-4 shadow-lg md:px-7 lg:px-9"
       >
         <div className="flex items-center justify-between gap-5">
           <Link
             href="/"
             aria-label="Gracious Investment homepage"
-            className="flex shrink-0 flex-col leading-tight text-white"
+            className="flex shrink-0 items-center gap-3 text-white"
             onClick={() => setMobileOpen(false)}
           >
-            <span className="text-base font-semibold tracking-wide sm:text-lg">
-              GRACIOUS INVESTMENT
-            </span>
-            <span className="mt-1 text-[11px] tracking-wide text-teal-100">
-              Your Property, Our Commitment.
+            <Image
+              src="/logo.png"
+              alt="Gracious Investment Ltd logo"
+              width={72}
+              height={72}
+              priority
+              className="h-14 w-14 shrink-0 rounded-full object-contain sm:h-16 sm:w-16"
+            />
+            <span className="hidden flex-col leading-tight sm:flex lg:hidden 2xl:flex">
+              <span className="text-base font-semibold tracking-wide sm:text-lg">
+                GRACIOUS INVESTMENT
+              </span>
+              <span className="mt-1 text-[11px] tracking-wide text-[#F5E9CD]">
+                Your Property, Our Commitment.
+              </span>
             </span>
           </Link>
 
@@ -156,7 +167,7 @@ export default function Navbar() {
                     ${
                       isActive(item)
                         ? "text-white"
-                        : "text-teal-100 hover:text-white"
+                        : "text-[#F5E9CD] hover:text-white"
                     }`}
                 >
                   {item.label}
@@ -178,7 +189,7 @@ export default function Navbar() {
                             href={child.href}
                             className="block px-4 py-2.5 text-sm
                               text-slate-700 transition-colors
-                              hover:bg-teal-50 hover:text-[#025a58]
+                              hover:bg-[#FFF4D6] hover:text-[#003020]
                               focus-visible:bg-teal-50
                               focus-visible:outline-none"
                           >
@@ -195,9 +206,9 @@ export default function Navbar() {
 
           <Link
             href={listingHref}
-            className="hidden shrink-0 rounded-md bg-white px-4
-              py-2.5 text-sm font-semibold text-[#025a58]
-              transition-colors hover:bg-teal-50
+            className="hidden shrink-0 rounded-md bg-[#E0A020] px-4
+              py-2.5 text-sm font-semibold text-[#003020]
+              transition-colors hover:bg-[#FFF4D6]
               focus-visible:outline focus-visible:outline-2
               focus-visible:outline-offset-2 focus-visible:outline-white
               lg:inline-flex"
@@ -243,7 +254,7 @@ export default function Navbar() {
                       ${
                         isActive(item)
                           ? "bg-white/10 text-white"
-                          : "text-teal-100"
+                          : "text-[#F5E9CD]"
                       }`}
                   >
                     {item.label}
@@ -257,7 +268,7 @@ export default function Navbar() {
                             href={child.href}
                             onClick={() => setMobileOpen(false)}
                             className="block rounded-md px-3 py-2.5
-                              text-sm text-teal-100
+                              text-sm text-[#F5E9CD]
                               hover:bg-white/10 hover:text-white"
                           >
                             {child.label}
@@ -273,9 +284,9 @@ export default function Navbar() {
             <Link
               href={listingHref}
               onClick={() => setMobileOpen(false)}
-              className="mt-4 block rounded-md bg-white px-4
+              className="mt-4 block rounded-md bg-[#E0A020] px-4
                 py-3 text-center text-sm font-semibold
-                text-[#025a58] hover:bg-teal-50"
+                text-[#003020] hover:bg-[#FFF4D6]"
             >
               List Your Property
             </Link>

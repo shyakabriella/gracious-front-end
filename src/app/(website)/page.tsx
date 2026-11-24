@@ -11,7 +11,7 @@ export default function HomePage() {
       <Suspense
         fallback={
           <section
-            className="bg-[#f8faf9] px-5 py-24 text-center text-sm text-slate-500"
+            className="bg-[#FAF7EF] px-5 py-24 text-center text-sm text-slate-500"
             aria-label="Featured properties loading"
           >
             Loading featured properties...

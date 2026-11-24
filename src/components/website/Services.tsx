@@ -39,7 +39,7 @@ const services = [
 
 export default function Services() {
   return (
-    <section id="services" className="scroll-mt-24 bg-[#f2f3f5] py-16 md:py-20">
+    <section id="services" className="scroll-mt-24 bg-[#FAF7EF] py-16 md:py-20">
       <div className="mx-auto px-6 md:px-[5.5%]">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {services.map(({ title, description, href, Icon }) => (
@@ -47,11 +47,11 @@ export default function Services() {
               key={title}
               className="flex flex-col items-center rounded-md bg-white px-8 pb-12 pt-10 text-center"
             >
-              <div className="text-[#0b2a5b]">
+              <div className="text-[#003020]">
                 <Icon />
               </div>
 
-              <h3 className="mt-4 text-xl font-medium text-[#0b2a5b]">
+              <h3 className="mt-4 text-xl font-medium text-[#003020]">
                 {title}
               </h3>
 
@@ -61,7 +61,7 @@ export default function Services() {
 
               <Link
                 href={href}
-                className="mt-6 border-b-[3px] border-[#025a58] pb-2 text-[17px] text-[#0b2a5b] transition-colors hover:text-[#025a58]"
+                className="mt-6 border-b-[3px] border-[#E0A020] pb-2 text-[17px] text-[#003020] transition-colors hover:text-[#8A611A]"
               >
                 Learn More
               </Link>

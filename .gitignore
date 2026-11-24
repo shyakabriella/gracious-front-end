@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local development backups
+/backups/
+*.before-*
+*.bak
+*.backup
+# Original videos retained locally for future web optimization
+/public/video/

@@ -126,22 +126,22 @@ export default async function PopularProperties() {
     <section
       id="featured-properties"
       aria-labelledby="featured-properties-heading"
-      className="relative overflow-hidden bg-[#f8faf9] py-20 sm:py-24 lg:py-28"
+      className="relative overflow-hidden bg-[#FAF7EF] py-20 sm:py-24 lg:py-28"
     >
       <div className="mx-auto w-full max-w-[1500px] px-5 sm:px-8 lg:px-[5.5%]">
         {/* Section heading */}
         <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#025a58] sm:text-sm">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#8A611A] sm:text-sm">
               Discover your next property
             </p>
 
             <h2
               id="featured-properties-heading"
-              className="text-3xl font-semibold leading-tight tracking-tight text-[#123b39] sm:text-4xl lg:text-5xl"
+              className="text-3xl font-semibold leading-tight tracking-tight text-[#003020] sm:text-4xl lg:text-5xl"
             >
               Explore Properties{" "}
-              <span className="text-[#02716d]">in Rwanda</span>
+              <span className="text-[#A87518]">in Rwanda</span>
             </h2>
 
             <p className="mt-5 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
@@ -154,15 +154,15 @@ export default async function PopularProperties() {
           <Link
             href="/properties"
             className="group inline-flex w-fit shrink-0 items-center
-              justify-center gap-3 rounded-full bg-[#025a58]
+              justify-center gap-3 rounded-full bg-[#003020]
               px-7 py-4 text-sm font-semibold text-white
               shadow-sm transition-[background-color,transform,box-shadow]
               duration-300 ease-out
-              hover:-translate-y-0.5 hover:bg-[#047370]
+              hover:-translate-y-0.5 hover:bg-[#004C35]
               hover:shadow-lg
               focus-visible:outline-2
               focus-visible:outline-offset-4
-              focus-visible:outline-[#025a58]
+              focus-visible:outline-[#E0A020]
               motion-reduce:transform-none
               motion-reduce:transition-none"
           >
@@ -208,7 +208,7 @@ export default async function PopularProperties() {
             className="mt-12 rounded-2xl border border-slate-200
               bg-white px-6 py-14 text-center"
           >
-            <h3 className="text-xl font-semibold text-[#123b39]">
+            <h3 className="text-xl font-semibold text-[#003020]">
               {available
                 ? "Featured properties are coming soon"
                 : "Featured properties are temporarily unavailable"}
@@ -222,8 +222,8 @@ export default async function PopularProperties() {
             <Link
               href="/contact"
               className="mt-6 inline-flex rounded-full
-                bg-[#025a58] px-7 py-3 font-semibold
-                text-white hover:bg-[#047370]
+                bg-[#003020] px-7 py-3 font-semibold
+                text-white hover:bg-[#004C35]
                 focus-visible:outline-2
                 focus-visible:outline-offset-2"
             >
@@ -241,7 +241,7 @@ export default async function PopularProperties() {
         >
           <Link
             href="/properties"
-            className="font-medium text-[#025a58]
+            className="font-medium text-[#8A611A]
               underline-offset-4 hover:underline"
           >
             Browse All Properties
@@ -249,7 +249,7 @@ export default async function PopularProperties() {
 
           <Link
             href="/rentals"
-            className="font-medium text-[#025a58]
+            className="font-medium text-[#8A611A]
               underline-offset-4 hover:underline"
           >
             Explore Rentals
@@ -257,7 +257,7 @@ export default async function PopularProperties() {
 
           <Link
             href="/contact"
-            className="font-medium text-[#025a58]
+            className="font-medium text-[#8A611A]
               underline-offset-4 hover:underline"
           >
             Speak With Our Team
