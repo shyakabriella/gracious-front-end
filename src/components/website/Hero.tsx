@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import HeroVideoBackground from "@/components/website/HeroVideoBackground";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -64,6 +65,9 @@ export default function Hero() {
         }}
       />
 
+      {/* Cinematic video background */}
+      <HeroVideoBackground />
+
       <div
         className="relative z-10 mx-auto w-full max-w-6xl
           text-center"
@@ -83,10 +87,10 @@ export default function Hero() {
         <h1
           id="hero-heading"
           className="gracious-hero-enter gracious-hero-delay-2
-            mx-auto max-w-5xl text-4xl font-semibold
+            mx-auto max-w-5xl text-3xl font-semibold
             leading-[1.13] tracking-tight
-            sm:text-5xl md:text-6xl
-            lg:text-[4.5rem]"
+            sm:text-4xl md:text-5xl
+            lg:text-[3.5rem]"
         >
           Find a place to call{" "}
           <span className="text-[#FFD050]">your own.</span>
@@ -94,9 +98,9 @@ export default function Hero() {
 
         <p
           className="gracious-hero-enter gracious-hero-delay-3
-            mx-auto mt-7 max-w-2xl text-base
-            leading-8 text-[#F8EDD2]/90
-            sm:text-lg"
+            mx-auto mt-6 max-w-2xl text-sm
+            leading-7 text-[#F8EDD2]/90
+            sm:text-base"
         >
           Discover houses, apartments, land and investment
           properties in Rwanda. Gracious Investment helps
@@ -110,11 +114,11 @@ export default function Hero() {
           aria-label="Search properties in Rwanda"
           onSubmit={handleSearch}
           className="gracious-hero-enter gracious-hero-delay-4
-            mx-auto mt-10 flex w-full max-w-3xl
-            flex-col gap-2 rounded-2xl bg-white
-            p-2 text-left shadow-[0_25px_65px_rgba(0,0,0,0.22)]
+            mx-auto mt-8 flex w-full max-w-5xl
+            flex-col gap-1.5 rounded-2xl bg-white
+            p-1.5 text-left shadow-[0_25px_65px_rgba(0,0,0,0.22)]
             sm:flex-row sm:items-center sm:rounded-full
-            sm:p-2.5"
+            sm:p-1.5"
         >
           <div className="flex min-w-0 flex-1 items-center gap-3 px-4">
             <svg
@@ -146,7 +150,7 @@ export default function Hero() {
               placeholder="Search Kigali, Kicukiro, houses, land..."
               autoComplete="off"
               maxLength={120}
-              className="h-14 min-w-0 w-full
+              className="h-11 min-w-0 w-full
                 bg-transparent text-base text-slate-800
                 outline-none placeholder:text-slate-500
                 focus-visible:outline-none"
@@ -155,9 +159,9 @@ export default function Hero() {
 
           <button
             type="submit"
-            className="inline-flex h-14 shrink-0 items-center
+            className="inline-flex h-11 shrink-0 items-center
               justify-center rounded-xl bg-[#E0A020]
-              px-9 font-semibold text-[#003020]
+              px-7 text-sm font-semibold text-[#003020]
               transition-[background-color,transform,box-shadow]
               duration-200 hover:bg-[#FFD050]
               hover:shadow-md active:scale-[0.98]

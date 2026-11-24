@@ -1,3 +1,4 @@
+import Footer from "@/components/website/Footer";
 import { Suspense } from "react";
 import Link from "next/link";
 import Navbar from "@/components/website/Navbar";
@@ -31,6 +32,7 @@ export default function WebsiteLayout({
         <Navbar />
       </Suspense>
       <main>{children}</main>
+      <Footer />
     </>
   );
 }
