@@ -67,8 +67,23 @@ async function getFeaturedProperties(): Promise<FeaturedResult> {
       throw new Error("Invalid public property response");
     }
 
-    const properties: Property[] = payload.featured_properties
+    const homepageListings = [
+      ...payload.featured_properties,
+      ...(Array.isArray(payload.latest_properties)
+        ? payload.latest_properties
+        : []),
+    ];
+
+    const seen = new Set<string>();
+
+    const properties: Property[] = homepageListings
       .filter(isFeaturedProperty)
+      .filter((item) => {
+        if (seen.has(item.slug)) return false;
+        seen.add(item.slug);
+        return true;
+      })
+      .slice(0, 6)
       .map((property) => {
         const price = Number(property.asking_price);
 
@@ -130,7 +145,7 @@ export default async function PopularProperties() {
     >
       <div className="mx-auto w-full max-w-[1500px] px-5 sm:px-8 lg:px-[5.5%]">
         {/* Section heading */}
-        <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#8A611A] sm:text-sm">
               Discover your next property
@@ -190,7 +205,7 @@ export default async function PopularProperties() {
 
         {/* Property listings */}
         {properties.length > 0 ? (
-          <div className="mt-12 grid gap-7 sm:grid-cols-2 lg:mt-14 lg:grid-cols-3 lg:gap-8">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:grid-cols-4 lg:gap-5">
             {properties.map((property, index) => (
               <div
                 key={property.id}

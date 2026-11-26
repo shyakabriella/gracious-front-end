@@ -341,7 +341,7 @@ async function PropertyDirectory({ searchParams }: PageProps) {
           </div>
         ) : result.properties.length > 0 ? (
           <>
-            <div className="mt-8 grid gap-7 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
               {result.properties.map((property) => (
                 <PropertyCard
                   key={property.id}

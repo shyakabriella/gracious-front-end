@@ -104,8 +104,15 @@ function sameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin");
   const site = request.headers.get("sec-fetch-site");
 
+  // Trusted public website origins, not the internal Nginx origin.
+  const allowedOrigins = new Set([
+    "https://www.graciousinvestiment.com",
+    "https://graciousinvestiment.com",
+  ]);
+
   return (
-    (!origin || origin === request.nextUrl.origin) &&
+    origin !== null &&
+    allowedOrigins.has(origin) &&
     (!site || ["same-origin", "none"].includes(site))
   );
 }

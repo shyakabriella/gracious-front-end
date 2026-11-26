@@ -45,6 +45,12 @@ const sections: {
         permission: "properties.view",
       },
       {
+        label: "Property Submissions",
+        href: "/dashboard/property-submissions",
+        icon: "building",
+        permission: "properties.verify",
+      },
+      {
         label: "Property Owners",
         href: "/dashboard/owners",
         icon: "users",

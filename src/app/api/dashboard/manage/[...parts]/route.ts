@@ -34,6 +34,62 @@ function resolveEndpoint(
     return `/staff/${parts[1]}/invitation/resend`;
   }
 
+  // Administrator-only property submission review.
+  // Laravel enforces role and properties.verify authorization.
+  if (parts[0] === "property-submissions") {
+    if (parts.length === 1 && method === "GET") {
+      return "/property-submissions";
+    }
+
+    if (
+      parts.length >= 2 &&
+      /^[1-9]\d*$/.test(parts[1])
+    ) {
+      const id = parts[1];
+
+      if (parts.length === 2 && method === "GET") {
+        return `/property-submissions/${id}`;
+      }
+
+      if (parts.length === 3) {
+        const action = parts[2];
+
+        if (
+          method === "PATCH" &&
+          ["start-review", "reject"].includes(action)
+        ) {
+          return `/property-submissions/${id}/${action}`;
+        }
+
+        if (method === "POST" && action === "quick-approve") {
+          return `/property-submissions/${id}/quick-approve`;
+        }
+
+        if (method === "POST" && action === "convert-publish") {
+          return `/property-submissions/${id}/convert-publish`;
+        }
+
+        if (method === "POST" && action === "approve") {
+          return `/property-submissions/${id}/approve`;
+        }
+
+        // Authorized review and evidence history.
+        if (
+          method === "GET" &&
+          ["verifications", "evidence", "owner-confirmations"]
+            .includes(action)
+        ) {
+          return `/property-submissions/${id}/${action}`;
+        }
+
+        // Append-only verification decisions.
+        if (method === "POST" && action === "verifications") {
+          return `/property-submissions/${id}/verifications`;
+        }
+      }
+    }
+  }
+
   // Property Owners: listing and registration.
   // Laravel enforces owners.view and owners.create.
   if (
@@ -721,8 +777,16 @@ async function handle(
     const origin = request.headers.get("origin");
     const site = request.headers.get("sec-fetch-site");
 
+    // Use the trusted public website origins.
+    // Next.js internal origin may differ behind Nginx.
+    // Never trust arbitrary forwarded host headers.
+    const allowedOrigins = new Set([
+      "https://www.graciousinvestiment.com",
+      "https://graciousinvestiment.com",
+    ]);
+
     if (
-      (origin && origin !== request.nextUrl.origin) ||
+      (origin && !allowedOrigins.has(origin)) ||
       (site && !["same-origin", "none"].includes(site))
     ) {
       return NextResponse.json(
@@ -745,7 +809,7 @@ async function handle(
     const query =
       method === "GET" &&
       (
-        ["/users", "/customers", "/leads", "/properties", "/crm/follow-ups", "/crm/unassigned-leads", "/owners", "/rentals"].includes(endpoint) ||
+        ["/users", "/customers", "/leads", "/properties", "/crm/follow-ups", "/crm/unassigned-leads", "/owners", "/rentals", "/property-submissions"].includes(endpoint) ||
         endpoint === "/customers/archived" ||
         endpoint === "/leads/archived"
       )

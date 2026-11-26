@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiUrl } from "@/lib/auth/server";
 
-export const runtime = "nodejs";
 
 type Context = {
   params: Promise<{ id: string }>;
