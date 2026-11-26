@@ -13,37 +13,62 @@ export const metadata: Metadata = {
 };
 
 export default function ListYourPropertyPage() {
+
+  const headline: string = "Sell, Rent or Manage Your Property in Rwanda";
+  const words: string[] = headline.split(" ");
+  let charIndexGlobal = 0;
+
+  
   return (
     <div className="min-h-screen bg-[#F6F8F5]">
-      <section className="bg-[#073B2A] px-5 pb-20 pt-40 text-white sm:pt-44">
-        <div className="mx-auto max-w-6xl">
-          <span className="inline-flex rounded-full border border-amber-300/35 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-200">
-            Partner with Gracious Investment
-          </span>
+      <section className="relative flex min-h-[450px] items-center justify-center overflow-hidden px-5 py-16 text-white sm:py-20 lg:py-32">
+  <video
+    autoPlay
+    muted
+    loop
+    playsInline
+    className="absolute inset-0 h-full w-full object-cover"
+  >
+    <source src="/video/1.mp4" type="video/mp4" />
+  </video>
 
-          <h1 className="mt-7 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-            List your property with confidence.
-          </h1>
+  {/* Centered content stack */}
+  <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center">
+    <span className="inline-flex rounded-full border border-amber-300/35 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-200">
+      Partner with Gracious Investment
+    </span>
 
-          <p className="mt-6 max-w-2xl text-base leading-8 text-emerald-50/85 sm:text-lg">
-            Want to sell, rent or professionally manage your property
-            in Rwanda? Tell us about it and our team will review your
-            submission.
-          </p>
+    <h1 className="mt-6 text-3xl font-semibold leading-snug sm:text-4xl lg:text-5xl">
+      {words.map((word: string, wIdx: number) => (
+        <span key={wIdx} className="mr-2.5 inline-block whitespace-nowrap last:mr-0">
+          {word.split("").map((char: string, cIdx: number) => {
+            const delay = charIndexGlobal++ * 0.06;
+            return (
+              <span
+                key={cIdx}
+                className="animate-letter"
+                style={{ animationDelay: `${delay}s` }}
+              >
+                {char}
+              </span>
+            );
+          })}
+        </span>
+      ))}
+    </h1>
 
-          <div className="mt-8 flex flex-wrap gap-3 text-sm text-emerald-50">
-            <span className="rounded-full border border-white/20 px-4 py-2">
-              Secure submission
-            </span>
-            <span className="rounded-full border border-white/20 px-4 py-2">
-              Staff verification
-            </span>
-            <span className="rounded-full border border-white/20 px-4 py-2">
-              No automatic publication
-            </span>
-          </div>
-        </div>
-      </section>
+    <svg viewBox="0 0 320 18" fill="none" className="mt-2 w-48 sm:w-64">
+      <path
+        d="M3 13C85 4 215 3 317 11"
+        stroke="#34d399"
+        strokeWidth="3"
+        strokeLinecap="round"
+        className="animate-underline"
+        style={{ animationDelay: `${charIndexGlobal * 0.06 + 0.1}s` }}
+      />
+    </svg>
+  </div>
+</section>
 
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-12 lg:grid-cols-[minmax(0,1fr)_290px] lg:py-16">
         <div>
